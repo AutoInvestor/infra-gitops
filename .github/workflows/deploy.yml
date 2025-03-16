@@ -12,6 +12,7 @@ jobs:
     outputs:
       publicapp_digest: ${{ steps.get_digest_publicapp.outputs.publicapp_digest }}
       backend_digests: ${{ steps.collect_backend_digests.outputs.backend_digests }}
+      namespace: ${{ steps.load_namespace.outputs.namespace }}
 
     steps:
       - name: Check out repository
@@ -21,7 +22,7 @@ jobs:
         id: load_namespace
         run: |
           NAMESPACE=$(yq e '.namespace' config/deployment-config.yaml)
-          echo "NAMESPACE=$NAMESPACE" >> $GITHUB_ENV
+          echo "namespace=$NAMESPACE" >> $GITHUB_OUTPUT
 
       - name: Load configuration for public app
         id: load_public
@@ -36,35 +37,28 @@ jobs:
 
       - name: Pull public app image
         id: publicapp_pull
-        shell: bash
         run: |
           docker pull "$PUBLIC_APP_IMAGE_FULL"
 
       - name: Get public app image digest
         id: get_digest_publicapp
-        shell: bash
         run: |
           PUBLICAPP_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' "$PUBLIC_APP_IMAGE_FULL")
           echo "publicapp_digest=$PUBLICAPP_DIGEST" >> "$GITHUB_OUTPUT"
 
       - name: Process backend images and extract digests
         id: collect_backend_digests
-        shell: bash
-        env:
-          CONFIG_FILE: config/deployment-config.yaml
         run: |
-          BACKEND_COUNT=$(yq e '.backends | length' $CONFIG_FILE)
+          BACKEND_COUNT=$(yq e '.backends | length' config/deployment-config.yaml)
           declare -A DIGESTS
           for (( i=0; i<$BACKEND_COUNT; i++ )); do
-            NAME=$(yq e ".backends[$i].name" $CONFIG_FILE)
-            IMAGE=$(yq e ".backends[$i].image" $CONFIG_FILE)
-            VERSION=$(yq e ".backends[$i].version" $CONFIG_FILE)
+            NAME=$(yq e ".backends[$i].name" config/deployment-config.yaml)
+            IMAGE=$(yq e ".backends[$i].image" config/deployment-config.yaml)
+            VERSION=$(yq e ".backends[$i].version" config/deployment-config.yaml)
             FULL_IMAGE="${IMAGE}:${VERSION}"
-            echo "Pulling image for backend $NAME: $FULL_IMAGE"
             docker pull "$FULL_IMAGE"
             DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' "$FULL_IMAGE")
             DIGESTS[$NAME]=$DIGEST
-            echo "Extracted digest for $NAME: ${DIGESTS[$NAME]}"
           done
           JSON="{"
           for key in "${!DIGESTS[@]}"; do
@@ -72,10 +66,8 @@ jobs:
           done
           JSON="${JSON%,}}"
           echo "backend_digests=$JSON" >> "$GITHUB_OUTPUT"
-          echo "Collected backend digests: $JSON"
 
       - name: Run E2E Tests (external script)
-        shell: bash
         run: |
           chmod +x e2e/image-test.sh
           ./e2e/image-test.sh "$PUBLIC_APP_IMAGE_FULL"
@@ -91,6 +83,9 @@ jobs:
     name: Deploy to GKE
     runs-on: ubuntu-22.04
     needs: e2e-test
+
+    env:
+      NAMESPACE: ${{ needs.e2e-test.outputs.namespace }}
 
     steps:
       - name: Check out repository
@@ -116,37 +111,27 @@ jobs:
 
       - name: Substitute variables for Namespace
         run: |
-          export NAMESPACE=$NAMESPACE
           envsubst < manifests/namespace-template.yaml > manifests/namespace.yaml
+
       - name: Create Namespace
         run: |
           kubectl apply -f manifests/namespace.yaml
 
       - name: Substitute variables for public app
         run: |
-          export APP_NAME=$PUBLIC_APP_NAME
-          export IMAGE=$PUBLIC_APP_IMAGE_FULL
-          export PORT=$PUBLIC_APP_PORT
-          export NAMESPACE=$NAMESPACE
           envsubst < manifests/public-app-template.yaml > manifests/public-app.yaml
 
       - name: Generate backend manifests
-        shell: bash
-        env:
-          CONFIG_FILE: config/deployment-config.yaml
         run: |
           rm -f manifests/backends.yaml
-          BACKEND_COUNT=$(yq e '.backends | length' $CONFIG_FILE)
+          BACKEND_COUNT=$(yq e '.backends | length' config/deployment-config.yaml)
           for (( i=0; i<$BACKEND_COUNT; i++ )); do
-            APP_NAME=$(yq e ".backends[$i].name" $CONFIG_FILE)
-            IMAGE=$(yq e ".backends[$i].image" $CONFIG_FILE)
-            VERSION=$(yq e ".backends[$i].version" $CONFIG_FILE)
+            APP_NAME=$(yq e ".backends[$i].name" config/deployment-config.yaml)
+            IMAGE=$(yq e ".backends[$i].image" config/deployment-config.yaml)
+            VERSION=$(yq e ".backends[$i].version" config/deployment-config.yaml)
             FULL_IMAGE="${IMAGE}:${VERSION}"
-            PORT=$(yq e ".backends[$i].port" $CONFIG_FILE)
-            export APP_NAME
-            export IMAGE="$FULL_IMAGE"
-            export PORT
-            export NAMESPACE
+            PORT=$(yq e ".backends[$i].port" config/deployment-config.yaml)
+            export APP_NAME IMAGE="$FULL_IMAGE" PORT NAMESPACE
             envsubst < manifests/backend-template.yaml >> manifests/backends.yaml
           done
 
@@ -155,11 +140,12 @@ jobs:
           cat manifests/namespace.yaml manifests/public-app.yaml manifests/backends.yaml > manifests/all.yaml
 
       - name: Pin image digests in manifest
-        shell: bash
         env:
           BACKEND_DIGESTS: ${{ needs.e2e-test.outputs.backend_digests }}
+          PUBLICAPP_DIGEST: ${{ needs.e2e-test.outputs.publicapp_digest }}
         run: |
-          sed -i "s|image: $PUBLIC_APP_IMAGE_FULL.*|image: ${{ needs.e2e-test.outputs.publicapp_digest }}|" manifests/all.yaml
+          sed -i "s|image: $PUBLIC_APP_IMAGE_FULL.*|image: $PUBLICAPP_DIGEST|" manifests/all.yaml
+
           declare -A DIGEST_MAP
           for key in $(echo "$BACKEND_DIGESTS" | jq -r 'keys[]'); do
             value=$(echo "$BACKEND_DIGESTS" | jq -r --arg k "$key" '.[$k]')
@@ -167,16 +153,13 @@ jobs:
           done
           for key in "${!DIGEST_MAP[@]}"; do
             sed -i "s|image: .*${key}.*|image: ${DIGEST_MAP[$key]}|" manifests/all.yaml
-            echo "Pinned $key to digest: ${DIGEST_MAP[$key]}"
           done
 
       - name: Deploy all to GKE
-        shell: bash
         run: |
           kubectl apply -f manifests/all.yaml
 
       - name: Verify Deployments
-        shell: bash
         run: |
           kubectl rollout status deployment/$PUBLIC_APP_NAME -n $NAMESPACE
           BACKEND_COUNT=$(yq e '.backends | length' config/deployment-config.yaml)
@@ -186,7 +169,6 @@ jobs:
           done
 
       - name: Get External IP for Public App
-        shell: bash
         run: |
           EXTERNAL_IP=""
           for i in {1..30}; do
