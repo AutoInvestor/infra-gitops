@@ -119,6 +119,11 @@ jobs:
 
       - name: Substitute variables for public app
         run: |
+          export APP_NAME=$PUBLIC_APP_NAME
+          export IMAGE=$PUBLIC_APP_IMAGE_FULL
+          export PORT=$PUBLIC_APP_PORT
+          export NAMESPACE=$NAMESPACE
+
           envsubst < manifests/public-app-template.yaml > manifests/public-app.yaml
 
       - name: Generate backend manifests
