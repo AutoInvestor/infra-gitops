@@ -106,28 +106,42 @@ jobs:
         id: load_namespace
         run: |
           NAMESPACE=$(yq e '.namespace' config/deployment-config.yaml)
-          # Export NAMESPACE so subsequent steps see it
           echo "NAMESPACE=$NAMESPACE" >> $GITHUB_ENV
           echo "namespace=$NAMESPACE" >> $GITHUB_OUTPUT
 
+      - name: Substitute variables for Namespace
+        run: |
+          # Create namespace manifest from the template
+          export NAMESPACE=$(yq e '.namespace' config/deployment-config.yaml)
+          envsubst < manifests/namespace-template.yaml > manifests/namespace.yaml
+          echo "--------- BEGIN manifests/namespace.yaml ---------"
+          cat manifests/namespace.yaml
+          echo "--------- END manifests/namespace.yaml ---------"
+
       - name: Substitute variables for public app
         run: |
-          # Debug the environment variables first
+          # Re-read public app variables from config/deployment-config.yaml
+          PUBLIC_APP_NAME=$(yq e '.public_app.name' config/deployment-config.yaml)
+          PUBLIC_APP_IMAGE=$(yq e '.public_app.image' config/deployment-config.yaml)
+          PUBLIC_APP_VERSION=$(yq e '.public_app.version' config/deployment-config.yaml)
+          PUBLIC_APP_PORT=$(yq e '.public_app.port' config/deployment-config.yaml)
+          PUBLIC_APP_IMAGE_FULL="${PUBLIC_APP_IMAGE}:${PUBLIC_APP_VERSION}"
+          
+          # Debug the variables to ensure they have values
           echo "PUBLIC_APP_NAME: $PUBLIC_APP_NAME"
           echo "PUBLIC_APP_IMAGE_FULL: $PUBLIC_APP_IMAGE_FULL"
           echo "PUBLIC_APP_PORT: $PUBLIC_APP_PORT"
           echo "NAMESPACE: $NAMESPACE"
-          
+
           # Export variables for substitution
           export APP_NAME=$PUBLIC_APP_NAME
           export IMAGE=$PUBLIC_APP_IMAGE_FULL
           export PORT=$PUBLIC_APP_PORT
           export NAMESPACE=$NAMESPACE
-
+          
           # Substitute variables in public-app-template.yaml
           envsubst < manifests/public-app-template.yaml > manifests/public-app.yaml
-          
-          # Debug the resulting public app manifest
+
           echo "--------- BEGIN manifests/public-app.yaml ---------"
           cat manifests/public-app.yaml
           echo "--------- END manifests/public-app.yaml ---------"
@@ -152,6 +166,9 @@ jobs:
       - name: Combine all manifests
         run: |
           cat manifests/namespace.yaml manifests/public-app.yaml manifests/backends.yaml > manifests/all.yaml
+          echo "--------- BEGIN manifests/all.yaml ---------"
+          cat manifests/all.yaml
+          echo "--------- END manifests/all.yaml ---------"
 
       - name: Pin image digests in manifest
         env:
@@ -166,18 +183,19 @@ jobs:
           # Replace public app image with its digest
           sed -i "s|image: ${PUBLIC_APP_IMAGE_FULL}.*|image: ${PUBLICAPP_DIGEST}|" manifests/all.yaml
 
-          # Process backend images
+          # Process backend images: build an associative array of digests
           declare -A DIGEST_MAP
           for key in $(echo "$BACKEND_DIGESTS" | jq -r 'keys[]'); do
             value=$(echo "$BACKEND_DIGESTS" | jq -r --arg k "$key" '.[$k]')
             DIGEST_MAP[$key]=$value
           done
 
+          # Replace each backend image with its digest
           for key in "${!DIGEST_MAP[@]}"; do
             sed -i "s|image: .*${key}.*|image: ${DIGEST_MAP[$key]}|" manifests/all.yaml
           done
 
-      - name: Debug manifests/all.yaml
+      - name: Debug manifests/all.yaml (post digest pinning)
         run: |
           echo "--------- BEGIN manifests/all.yaml ---------"
           cat manifests/all.yaml
@@ -189,6 +207,7 @@ jobs:
 
       - name: Verify Deployments
         run: |
+          PUBLIC_APP_NAME=$(yq e '.public_app.name' config/deployment-config.yaml)
           kubectl rollout status deployment/$PUBLIC_APP_NAME -n $NAMESPACE
           BACKEND_COUNT=$(yq e '.backends | length' config/deployment-config.yaml)
           for (( i=0; i<$BACKEND_COUNT; i++ )); do
@@ -198,6 +217,8 @@ jobs:
 
       - name: Get External IP for Public App
         run: |
+          PUBLIC_APP_NAME=$(yq e '.public_app.name' config/deployment-config.yaml)
+          PUBLIC_APP_PORT=$(yq e '.public_app.port' config/deployment-config.yaml)
           EXTERNAL_IP=""
           for i in {1..30}; do
             EXTERNAL_IP=$(kubectl get svc $PUBLIC_APP_NAME -n $NAMESPACE --output jsonpath='{.status.loadBalancer.ingress[0].ip}')
