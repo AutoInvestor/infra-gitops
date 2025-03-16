@@ -6,6 +6,74 @@ on:
       - main
 
 jobs:
+  e2e-test:
+    name: E2E Tests and Extract Digests
+    runs-on: ubuntu-22.04
+    outputs:
+      publicapp_digest: ${{ steps.get_digest_publicapp.outputs.publicapp_digest }}
+      backend_digests: ${{ steps.collect_backend_digests.outputs.backend_digests }}
+      namespace: ${{ steps.load_namespace.outputs.namespace }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v3
+
+      - name: Load global namespace
+        id: load_namespace
+        run: |
+          NAMESPACE=$(yq e '.namespace' config/deployment-config.yaml)
+          echo "namespace=$NAMESPACE" >> $GITHUB_OUTPUT
+      - name: Load configuration for public app
+        id: load_public
+        run: |
+          PUBLIC_APP_NAME=$(yq e '.public_app.name' config/deployment-config.yaml)
+          PUBLIC_APP_IMAGE=$(yq e '.public_app.image' config/deployment-config.yaml)
+          PUBLIC_APP_VERSION=$(yq e '.public_app.version' config/deployment-config.yaml)
+          PUBLIC_APP_PORT=$(yq e '.public_app.port' config/deployment-config.yaml)
+          echo "PUBLIC_APP_NAME=$PUBLIC_APP_NAME" >> $GITHUB_ENV
+          echo "PUBLIC_APP_IMAGE_FULL=${PUBLIC_APP_IMAGE}:${PUBLIC_APP_VERSION}" >> $GITHUB_ENV
+          echo "PUBLIC_APP_PORT=$PUBLIC_APP_PORT" >> $GITHUB_ENV
+      - name: Pull public app image
+        id: publicapp_pull
+        run: |
+          docker pull "$PUBLIC_APP_IMAGE_FULL"
+      - name: Get public app image digest
+        id: get_digest_publicapp
+        run: |
+          PUBLICAPP_DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' "$PUBLIC_APP_IMAGE_FULL")
+          echo "publicapp_digest=$PUBLICAPP_DIGEST" >> "$GITHUB_OUTPUT"
+      - name: Process backend images and extract digests
+        id: collect_backend_digests
+        run: |
+          BACKEND_COUNT=$(yq e '.backends | length' config/deployment-config.yaml)
+          declare -A DIGESTS
+          for (( i=0; i<$BACKEND_COUNT; i++ )); do
+            NAME=$(yq e ".backends[$i].name" config/deployment-config.yaml)
+            IMAGE=$(yq e ".backends[$i].image" config/deployment-config.yaml)
+            VERSION=$(yq e ".backends[$i].version" config/deployment-config.yaml)
+            FULL_IMAGE="${IMAGE}:${VERSION}"
+            docker pull "$FULL_IMAGE"
+            DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' "$FULL_IMAGE")
+            DIGESTS[$NAME]=$DIGEST
+          done
+          JSON="{"
+          for key in "${!DIGESTS[@]}"; do
+            JSON+="\"$key\":\"${DIGESTS[$key]}\","
+          done
+          JSON="${JSON%,}}"
+          echo "backend_digests=$JSON" >> "$GITHUB_OUTPUT"
+      - name: Run E2E Tests (external script)
+        run: |
+          chmod +x e2e/image-test.sh
+          ./e2e/image-test.sh "$PUBLIC_APP_IMAGE_FULL"
+          BACKEND_COUNT=$(yq e '.backends | length' config/deployment-config.yaml)
+          for (( i=0; i<$BACKEND_COUNT; i++ )); do
+            BACKEND_IMAGE=$(yq e ".backends[$i].image" config/deployment-config.yaml)
+            BACKEND_VERSION=$(yq e ".backends[$i].version" config/deployment-config.yaml)
+            FULL_IMAGE="${BACKEND_IMAGE}:${BACKEND_VERSION}"
+            ./e2e/image-test.sh "$FULL_IMAGE"
+          done
+
   deploy:
     name: Deploy to GKE
     runs-on: ubuntu-22.04
