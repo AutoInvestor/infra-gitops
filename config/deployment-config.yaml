@@ -1,0 +1,13 @@
+namespace: autoinvestor
+
+public_app:
+  name: frontend
+  image: docker.io/polpinol98/autoinvestor-frontend
+  version: 1.0.0
+  port: 8080
+
+backends:
+  - name: users
+    image: docker.io/polpinol98/autoinvestor-users
+    version: 1.0.0
+    port: 8081
