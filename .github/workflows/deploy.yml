@@ -152,13 +152,22 @@ jobs:
           BACKEND_DIGESTS: ${{ needs.e2e-test.outputs.backend_digests }}
           PUBLICAPP_DIGEST: ${{ needs.e2e-test.outputs.publicapp_digest }}
         run: |
-          sed -i "s|image: $PUBLIC_APP_IMAGE_FULL.*|image: $PUBLICAPP_DIGEST|" manifests/all.yaml
-
+          # Re-read public app image and version from config
+          PUBLIC_APP_IMAGE=$(yq e '.public_app.image' config/deployment-config.yaml)
+          PUBLIC_APP_VERSION=$(yq e '.public_app.version' config/deployment-config.yaml)
+          PUBLIC_APP_IMAGE_FULL="${PUBLIC_APP_IMAGE}:${PUBLIC_APP_VERSION}"
+          
+          # Replace public app image with its digest
+          sed -i "s|image: ${PUBLIC_APP_IMAGE_FULL}.*|image: ${PUBLICAPP_DIGEST}|" manifests/all.yaml
+          
+          # Process backend images: build an associative array of digests
           declare -A DIGEST_MAP
           for key in $(echo "$BACKEND_DIGESTS" | jq -r 'keys[]'); do
             value=$(echo "$BACKEND_DIGESTS" | jq -r --arg k "$key" '.[$k]')
             DIGEST_MAP[$key]=$value
           done
+          
+          # Replace each backend image with its digest
           for key in "${!DIGEST_MAP[@]}"; do
             sed -i "s|image: .*${key}.*|image: ${DIGEST_MAP[$key]}|" manifests/all.yaml
           done
