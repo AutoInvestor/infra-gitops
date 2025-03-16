@@ -9,5 +9,5 @@ public_app:
 backends:
   - name: users
     image: docker.io/polpinol98/autoinvestor-users
-    version: 1.0.0
+    version: 0.0.5
     port: 8081
