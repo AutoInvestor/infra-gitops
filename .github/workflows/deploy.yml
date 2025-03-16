@@ -172,6 +172,12 @@ jobs:
             sed -i "s|image: .*${key}.*|image: ${DIGEST_MAP[$key]}|" manifests/all.yaml
           done
 
+      - name: Debug manifests/all.yaml
+        run: |
+          echo "--------- BEGIN manifests/all.yaml ---------"
+          cat manifests/all.yaml
+          echo "--------- END manifests/all.yaml ---------"
+
       - name: Deploy all to GKE
         run: |
           kubectl apply -f manifests/all.yaml
