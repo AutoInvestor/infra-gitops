@@ -60,8 +60,6 @@ jobs:
             DIGEST=$(docker inspect --format='{{index .RepoDigests 0}}' "$FULL_IMAGE")
             DIGESTS[$NAME]=$DIGEST
           done
-
-          # Build a JSON object of backend name => digest
           JSON="{"
           for key in "${!DIGESTS[@]}"; do
             JSON+="\"$key\":\"${DIGESTS[$key]}\","
@@ -72,11 +70,7 @@ jobs:
       - name: Run E2E Tests (external script)
         run: |
           chmod +x e2e/image-test.sh
-
-          # Test the public app image
           ./e2e/image-test.sh "$PUBLIC_APP_IMAGE_FULL"
-
-          # Test all backend images
           BACKEND_COUNT=$(yq e '.backends | length' config/deployment-config.yaml)
           for (( i=0; i<$BACKEND_COUNT; i++ )); do
             BACKEND_IMAGE=$(yq e ".backends[$i].image" config/deployment-config.yaml)
@@ -89,6 +83,7 @@ jobs:
     name: Deploy to GKE
     runs-on: ubuntu-22.04
     needs: e2e-test
+
     env:
       NAMESPACE: ${{ needs.e2e-test.outputs.namespace }}
 
@@ -122,12 +117,8 @@ jobs:
         run: |
           kubectl apply -f manifests/namespace.yaml
 
-      # ------------------------------------------------
-      # Substitute variables for the public app
-      # ------------------------------------------------
       - name: Substitute variables for public app
         run: |
-          # Make sure envsubst sees the right variables
           export APP_NAME=$PUBLIC_APP_NAME
           export IMAGE=$PUBLIC_APP_IMAGE_FULL
           export PORT=$PUBLIC_APP_PORT
@@ -135,9 +126,6 @@ jobs:
 
           envsubst < manifests/public-app-template.yaml > manifests/public-app.yaml
 
-      # ------------------------------------------------
-      # Generate and substitute backends
-      # ------------------------------------------------
       - name: Generate backend manifests
         run: |
           rm -f manifests/backends.yaml
@@ -148,33 +136,26 @@ jobs:
             VERSION=$(yq e ".backends[$i].version" config/deployment-config.yaml)
             FULL_IMAGE="${IMAGE}:${VERSION}"
             PORT=$(yq e ".backends[$i].port" config/deployment-config.yaml)
-
             export APP_NAME IMAGE="$FULL_IMAGE" PORT NAMESPACE
             envsubst < manifests/backend-template.yaml >> manifests/backends.yaml
           done
 
       - name: Combine all manifests
         run: |
-          cat manifests/namespace.yaml \
-              manifests/public-app.yaml \
-              manifests/backends.yaml \
-              > manifests/all.yaml
+          cat manifests/namespace.yaml manifests/public-app.yaml manifests/backends.yaml > manifests/all.yaml
 
       - name: Pin image digests in manifest
         env:
           BACKEND_DIGESTS: ${{ needs.e2e-test.outputs.backend_digests }}
           PUBLICAPP_DIGEST: ${{ needs.e2e-test.outputs.publicapp_digest }}
         run: |
-          # Update the public app image to its digest
           sed -i "s|image: $PUBLIC_APP_IMAGE_FULL.*|image: $PUBLICAPP_DIGEST|" manifests/all.yaml
 
-          # Update each backend image to its digest
           declare -A DIGEST_MAP
           for key in $(echo "$BACKEND_DIGESTS" | jq -r 'keys[]'); do
             value=$(echo "$BACKEND_DIGESTS" | jq -r --arg k "$key" '.[$k]')
             DIGEST_MAP[$key]=$value
           done
-
           for key in "${!DIGEST_MAP[@]}"; do
             sed -i "s|image: .*${key}.*|image: ${DIGEST_MAP[$key]}|" manifests/all.yaml
           done
@@ -185,10 +166,7 @@ jobs:
 
       - name: Verify Deployments
         run: |
-          # Check the public app rollout
           kubectl rollout status deployment/$PUBLIC_APP_NAME -n $NAMESPACE
-
-          # Check each backend's rollout
           BACKEND_COUNT=$(yq e '.backends | length' config/deployment-config.yaml)
           for (( i=0; i<$BACKEND_COUNT; i++ )); do
             NAME=$(yq e ".backends[$i].name" config/deployment-config.yaml)
@@ -206,12 +184,10 @@ jobs:
             echo "Waiting for external IP..."
             sleep 10
           done
-
           if [ -z "$EXTERNAL_IP" ]; then
             echo "Timed out waiting for the external IP"
             exit 1
           fi
-
           echo "---------------------------------------------------"
           echo "Public app external IP: $EXTERNAL_IP"
           echo "Access the service at: http://${EXTERNAL_IP}:$PUBLIC_APP_PORT"
