@@ -33,4 +33,3 @@ spec:
     - name: http
       port: ${PORT}
       targetPort: ${PORT}
----
