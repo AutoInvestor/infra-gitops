@@ -136,7 +136,10 @@ jobs:
             VERSION=$(yq e ".backends[$i].version" config/deployment-config.yaml)
             FULL_IMAGE="${IMAGE}:${VERSION}"
             PORT=$(yq e ".backends[$i].port" config/deployment-config.yaml)
-            export APP_NAME IMAGE="$FULL_IMAGE" PORT NAMESPACE
+            export APP_NAME
+            export IMAGE="$FULL_IMAGE"
+            export PORT
+            export NAMESPACE
             envsubst < manifests/backend-template.yaml >> manifests/backends.yaml
           done
 
