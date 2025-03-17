@@ -25,7 +25,7 @@ backends:
 
   - name: market-feeling
     image: docker.io/polpinol98/autoinvestor-market-feeling
-    version: 0.0.1
+    version: 0.0.2
     port: 8084
 
   - name: decision-making
