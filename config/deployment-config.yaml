@@ -5,6 +5,7 @@ public_app:
   image: docker.io/polpinol98/autoinvestor-frontend
   version: 0.0.2
   port: 8080
+  target_port: 80
 
 backends:
   - name: users
