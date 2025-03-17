@@ -20,7 +20,7 @@ backends:
 
   - name: portfolio
     image: docker.io/polpinol98/autoinvestor-portfolio
-    version: 0.0.1
+    version: 0.0.2
     port: 8083
 
   - name: market-feeling
