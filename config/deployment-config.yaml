@@ -30,5 +30,5 @@ backends:
 
   - name: decision-making
     image: docker.io/polpinol98/autoinvestor-decision-making
-    version: 0.0.1
+    version: 0.0.2
     port: 8085
