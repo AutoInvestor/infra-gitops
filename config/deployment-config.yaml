@@ -15,7 +15,7 @@ backends:
 
   - name: alerts
     image: docker.io/polpinol98/autoinvestor-alerts
-    version: 0.0.1
+    version: 0.0.2
     port: 8082
 
   - name: portfolio
