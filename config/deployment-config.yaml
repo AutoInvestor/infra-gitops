@@ -12,3 +12,23 @@ backends:
     image: docker.io/polpinol98/autoinvestor-users
     version: 0.0.5
     port: 8081
+
+  - name: alerts
+    image: docker.io/polpinol98/autoinvestor-alerts
+    version: 0.0.1
+    port: 8082
+
+  - name: portfolio
+    image: docker.io/polpinol98/autoinvestor-portfolio
+    version: 0.0.1
+    port: 8083
+
+  - name: market-feeling
+    image: docker.io/polpinol98/autoinvestor-market-feeling
+    version: 0.0.1
+    port: 8084
+
+  - name: decision-making
+    image: docker.io/polpinol98/autoinvestor-decision-making
+    version: 0.0.1
+    port: 8085
