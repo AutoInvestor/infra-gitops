@@ -30,9 +30,11 @@ jobs:
           PUBLIC_APP_IMAGE=$(yq e '.public_app.image' config/deployment-config.yaml)
           PUBLIC_APP_VERSION=$(yq e '.public_app.version' config/deployment-config.yaml)
           PUBLIC_APP_PORT=$(yq e '.public_app.port' config/deployment-config.yaml)
+          PUBLIC_APP_TARGET_PORT=$(yq e '.public_app.target_port' config/deployment-config.yaml)
           echo "PUBLIC_APP_NAME=$PUBLIC_APP_NAME" >> $GITHUB_ENV
           echo "PUBLIC_APP_IMAGE_FULL=${PUBLIC_APP_IMAGE}:${PUBLIC_APP_VERSION}" >> $GITHUB_ENV
           echo "PUBLIC_APP_PORT=$PUBLIC_APP_PORT" >> $GITHUB_ENV
+          echo "PUBLIC_APP_TARGET_PORT=$PUBLIC_APP_TARGET_PORT" >> $GITHUB_ENV
       - name: Pull public app image
         id: publicapp_pull
         run: |
@@ -125,18 +127,21 @@ jobs:
           PUBLIC_APP_IMAGE=$(yq e '.public_app.image' config/deployment-config.yaml)
           PUBLIC_APP_VERSION=$(yq e '.public_app.version' config/deployment-config.yaml)
           PUBLIC_APP_PORT=$(yq e '.public_app.port' config/deployment-config.yaml)
+          PUBLIC_APP_TARGET_PORT=$(yq e '.public_app.target_port' config/deployment-config.yaml)
           PUBLIC_APP_IMAGE_FULL="${PUBLIC_APP_IMAGE}:${PUBLIC_APP_VERSION}"
           
           # Debug the variables to ensure they have values
           echo "PUBLIC_APP_NAME: $PUBLIC_APP_NAME"
           echo "PUBLIC_APP_IMAGE_FULL: $PUBLIC_APP_IMAGE_FULL"
           echo "PUBLIC_APP_PORT: $PUBLIC_APP_PORT"
+          echo "PUBLIC_APP_TARGET_PORT: $PUBLIC_APP_TARGET_PORT"
           echo "NAMESPACE: $NAMESPACE"
 
           # Export variables for substitution
           export APP_NAME=$PUBLIC_APP_NAME
           export IMAGE=$PUBLIC_APP_IMAGE_FULL
           export PORT=$PUBLIC_APP_PORT
+          export TARGET_PORT=$PUBLIC_APP_TARGET_PORT
           export NAMESPACE=$NAMESPACE
           
           # Substitute variables in public-app-template.yaml
