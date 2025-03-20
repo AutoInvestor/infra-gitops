@@ -3,7 +3,7 @@ namespace: autoinvestor
 public_app:
   name: frontend
   image: docker.io/polpinol98/autoinvestor-frontend
-  version: 0.1.0
+  version: 0.1.1
   port: 8080
   target_port: 80
 
