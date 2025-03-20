@@ -1,0 +1,39 @@
+name: Update Image Version
+
+on:
+  workflow_call:
+    inputs:
+      image:
+        description: 'The image name to update'
+        required: true
+        type: string
+      version:
+        description: 'The new version for the image'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  update-version:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          repository: AutoInvestor/infra-gitops
+          token: ${{ secrets.CD_REPO_TOKEN }}
+
+      - name: Update version in YAML
+        run: |
+          sed -i '/image: ${{ inputs.image }}/ {n; s/version: .*/version: ${{ inputs.version }}/}' helm/values.yaml
+
+      - name: Commit changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add helm/values.yaml
+          git commit -m "Update '${{ inputs.image }}' version to '${{ inputs.version }}'"
+          git push

@@ -1,0 +1,33 @@
+imageRepository: docker.io/polpinol98
+
+apps:
+  - name: users
+    image: autoinvestor-users
+    version: 0.0.5
+    port: 8080
+
+  - name: alerts
+    image: autoinvestor-alerts
+    version: 0.0.2
+    port: 8080
+
+  - name: portfolio
+    image: autoinvestor-portfolio
+    version: 0.0.2
+    port: 8080
+
+  - name: market-feeling
+    image: autoinvestor-market-feeling
+    version: 0.0.2
+    port: 8080
+
+  - name: decision-making
+    image: autoinvestor-decision-making
+    version: 0.0.2
+    port: 8080
+
+publicApps:
+  - name: frontend
+    image: autoinvestor-frontend
+    version: 0.1.1
+    port: 80
