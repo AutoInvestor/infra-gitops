@@ -10,7 +10,7 @@ public_app:
 backends:
   - name: users
     image: docker.io/polpinol98/autoinvestor-users
-    version: 1.0.0
+    version: 2.0.0
     port: 8081
 
   - name: alerts
