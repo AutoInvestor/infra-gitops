@@ -29,5 +29,5 @@ apps:
 publicApps:
   - name: frontend
     image: autoinvestor-frontend
-    version: 
+    version: 0.2.0
     port: 80
