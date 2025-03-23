@@ -23,7 +23,7 @@ apps:
 
   - name: decision-making
     image: autoinvestor-decision-making
-    version: 0.0.2
+    version: 0.2.0
     port: 8080
 
 publicApps:
