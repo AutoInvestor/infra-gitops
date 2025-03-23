@@ -3,7 +3,7 @@ imageRepository: docker.io/polpinol98
 apps:
   - name: users
     image: autoinvestor-users
-    version: 0.0.5
+    version: 2.1.0
     port: 8080
 
   - name: alerts
