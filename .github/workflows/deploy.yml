@@ -33,7 +33,7 @@ jobs:
         uses: google-github-actions/get-gke-credentials@v1
         with:
           cluster_name: ${{ vars.GCP_GKE_CLUSTER_NAME }}
-          location: ${{ vars.GCP_REGION }}
+          location: ${{ vars.GCP_GKE_CLUSTER_ZONE }}
           project_id: ${{ vars.GCP_PROJECT_ID }}
 
       - name: Install Helm
