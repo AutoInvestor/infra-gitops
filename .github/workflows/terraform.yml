@@ -4,16 +4,14 @@ on:
   push:
     branches:
       - main
-    paths-ignore:
-      - helm
-      - .github/workflows
+    paths:
+      - '**.tf'
   pull_request:
     types: [opened, synchronize]
     branches:
       - main
-    paths-ignore:
-      - helm
-      - .github/workflows
+    paths:
+      - '**.tf'
 
 
 env:
