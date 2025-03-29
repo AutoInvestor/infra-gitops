@@ -8,6 +8,11 @@ variable "region" {
   type        = string
 }
 
+variable "gke_zone" {
+  description = "La zona en la que crearás el GKE cluster"
+  type        = string
+}
+
 variable "gke_cluster_name" {
   default = "Name of the GKE cluster"
   type    = string
