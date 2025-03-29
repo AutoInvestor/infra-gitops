@@ -23,15 +23,15 @@ jobs:
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v1
         with:
-          project_id: ${{ secrets.GKE_PROJECT_ID }}
+          project_id: ${{ vars.GCP_PROJECT_ID }}
           install_components: 'kubectl'
 
       - name: Get GKE Credentials
         uses: google-github-actions/get-gke-credentials@v1
         with:
-          cluster_name: ${{ secrets.GKE_CLUSTER_NAME }}
-          location: ${{ secrets.GKE_CLUSTER_ZONE }}
-          project_id: ${{ secrets.GKE_PROJECT_ID }}
+          cluster_name: ${{ vars.GCP_GKE_CLUSTER_NAME }}
+          location: ${{ vars.GCP_REGION }}
+          project_id: ${{ vars.GCP_PROJECT_ID }}
 
       - name: Install Helm
         uses: azure/setup-helm@v3
