@@ -33,17 +33,19 @@ spec:
       port: 80
       targetPort: {{ .port }}
 ---
-apiVersion: v1
-kind: Service
+apiVersion: networking.k8s.io/v1
+kind: Ingress
 metadata:
-  name: {{ .name }}-load-balancer
-spec:
-  type: LoadBalancer
-  selector:
+  name: {{ .name }}-ingress
+  annotations:
+    kubernetes.io/ingress.global-static-ip-name: global-{{ .name }}-address-ip
+  labels:
     app: {{ .name }}
-  ports:
-    - name: http
-      port: 80
-      targetPort: {{ .port }}
+spec:
+  defaultBackend:
+    service:
+      name: {{ .name }}-service
+      port:
+        number: 80
 ---
 {{- end }}
