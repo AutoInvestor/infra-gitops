@@ -39,5 +39,5 @@ publicApps:
 
   - name: api-gateway
     image: autoinvestor-api-gateway
-    version: 0.0.0
+    version: 1.0.0
     port: 8080
