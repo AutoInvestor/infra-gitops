@@ -23,9 +23,9 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .name }}-service
+  name: {{ .name }}-load-balancer
 spec:
-  type: ClusterIP
+  type: LoadBalancer
   selector:
     app: {{ .name }}
   ports:
@@ -44,7 +44,7 @@ metadata:
 spec:
   defaultBackend:
     service:
-      name: {{ .name }}-service
+      name: {{ .name }}-load-balancer
       port:
         number: 80
 ---
