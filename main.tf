@@ -1,6 +1,6 @@
 resource "google_storage_bucket" "tfstate" {
-  name     = "terraform-state-autoinvestor"
-  location = var.region
+  name          = "terraform-state-autoinvestor"
+  location      = var.region
   storage_class = "STANDARD"
   force_destroy = true
 
