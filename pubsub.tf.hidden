@@ -33,4 +33,6 @@ resource "google_pubsub_subscription" "subscription" {
   topic = each.value
 
   ack_deadline_seconds = 60
+
+  depends_on = [google_pubsub_topic.topic]
 }
