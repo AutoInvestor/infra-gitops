@@ -30,9 +30,7 @@ resource "google_pubsub_subscription" "subscription" {
   for_each = local.subscriptions
 
   name  = each.key
-  topic = each.value
+  topic = google_pubsub_topic.topic[each.value].id
 
   ack_deadline_seconds = 60
-
-  depends_on = [google_pubsub_topic.topic]
 }
