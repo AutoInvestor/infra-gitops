@@ -5,7 +5,7 @@ locals {
     "decision-making" = ["alerts"],
     "alerts"          = [],
     "portfolio"       = ["alerts"],
-    "core"            = ["decision-making", "alerts"]
+    "core"            = ["market-feeling", "decision-making", "alerts"]
   }
 
   subscriptions = merge([for item in flatten([
