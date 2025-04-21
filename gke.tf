@@ -21,9 +21,14 @@ resource "google_project_iam_member" "gke_nodes_sa_role" {
 }
 
 resource "kubernetes_service_account" "gke_nodes_ksa" {
+  depends_on = [google_container_cluster.primary]
+
   metadata {
     name      = "gke-nodes-kubernetes-service-account"
     namespace = "autoinvestor"
+    annotations = {
+      "iam.gke.io/gcp-service-account" = google_service_account.gke_nodes_sa.email
+    }
   }
 }
 
