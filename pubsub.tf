@@ -24,6 +24,10 @@ resource "google_pubsub_topic" "topic" {
   name = each.key
 }
 
+resource "google_pubsub_topic" "dlq_topic" { # Como este topic no tiene subscribers el mensaje simplemente desaparece
+  name = "dead-letter-topic"
+}
+
 # Subscribers
 
 resource "google_pubsub_subscription" "subscription" {
@@ -32,6 +36,11 @@ resource "google_pubsub_subscription" "subscription" {
   name  = each.key
   topic = google_pubsub_topic.topic[each.value].id
 
-  ack_deadline_seconds = 60
+  dead_letter_policy {
+    dead_letter_topic     = google_pubsub_topic.dlq_topic.id
+    max_delivery_attempts = 5
+  }
+
+  ack_deadline_seconds       = 60
   message_retention_duration = "86400s"
 }
