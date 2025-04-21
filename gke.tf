@@ -45,7 +45,7 @@ resource "google_service_account_iam_binding" "gke_nodes_sa_ksa_binding" {
   role = "roles/iam.workloadIdentityUser"
 
   members = [
-    "serviceAccount:${google_container_cluster.primary.workload_identity_config[0].workload_pool}.svc.id.goog[${kubernetes_service_account.gke_nodes_ksa.metadata[0].namespace}/${kubernetes_service_account.gke_nodes_ksa.metadata[0].name}]"
+    "serviceAccount:${google_container_cluster.primary.workload_identity_config[0].workload_pool}[${kubernetes_service_account.gke_nodes_ksa.metadata[0].namespace}/${kubernetes_service_account.gke_nodes_ksa.metadata[0].name}]"
   ]
 }
 
