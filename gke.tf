@@ -37,6 +37,12 @@ resource "google_container_cluster" "primary" {
 
   remove_default_node_pool = true
   initial_node_count       = 1
+
+  maintenance_policy {
+    daily_maintenance_window {
+      start_time = "01:00"
+    }
+  }
 }
 
 resource "google_service_account_iam_binding" "gke_nodes_sa_ksa_binding" {
