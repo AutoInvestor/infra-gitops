@@ -13,6 +13,7 @@ spec:
       labels:
         app: {{ .name }}
     spec:
+      serviceAccountName: "gke-nodes-kubernetes-service-account"
       containers:
         - name: {{ .name }}
           image: "{{ $.Values.imageRepository }}/{{ .image }}:{{ .version }}"

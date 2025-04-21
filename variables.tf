@@ -14,6 +14,6 @@ variable "gke_zone" {
 }
 
 variable "gke_cluster_name" {
-  default = "Name of the GKE cluster"
-  type    = string
+  description = "Name of the GKE cluster"
+  type        = string
 }
