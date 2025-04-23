@@ -1,4 +1,4 @@
-{{- range .Values.publicApps }}
+{{- range .Values.apps }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -24,29 +24,13 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .name }}-load-balancer
+  name: {{ .name }}-service
 spec:
-  type: LoadBalancer
+  type: ClusterIP
   selector:
     app: {{ .name }}
   ports:
     - name: http
       port: 80
       targetPort: {{ .port }}
----
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: {{ .name }}-ingress
-  annotations:
-    kubernetes.io/ingress.global-static-ip-name: global-{{ .name }}-address-ip
-  labels:
-    app: {{ .name }}
-spec:
-  defaultBackend:
-    service:
-      name: {{ .name }}-load-balancer
-      port:
-        number: 80
----
 {{- end }}

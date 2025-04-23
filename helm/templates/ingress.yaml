@@ -1,0 +1,33 @@
+apiVersion: networking.gke.io/v1
+kind: ManagedCertificate
+metadata:
+  name: ingress-cert
+spec:
+  domains:
+    - "{{ .Values.domain }}"
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress
+  annotations:
+    kubernetes.io/ingress.class: "gce"
+    ingress.gcp.kubernetes.io/https-redirect: "true"
+    networking.gke.io/managed-certificates: ingress-cert
+    kubernetes.io/ingress.global-static-ip-name: global-address-ip
+spec:
+  rules:
+    - host: "{{ .Values.domain }}"
+      http:
+        paths:
+          {{- range .Values.apps }}
+          {{- if .path }}
+          - path: {{ .path }}
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ .name }}-service
+                port:
+                  number: 80
+          {{- end }}
+          {{- end }}
