@@ -26,7 +26,7 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: {{ .name }}-service
+                name: {{ .name }}-load-balancer
                 port:
                   number: 80
           {{- end }}
