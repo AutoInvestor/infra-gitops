@@ -1,4 +1,5 @@
 imageRepository: docker.io/polpinol98
+domain: autoinvestor.alvaromanoso.dev
 
 apps:
   - name: users
@@ -31,13 +32,14 @@ apps:
     version: 1.0.0
     port: 8080
 
-publicApps:
   - name: frontend
     image: autoinvestor-frontend
     version: 0.2.0
     port: 80
+    path: /
 
   - name: api-gateway
     image: autoinvestor-api-gateway
     version: 1.0.1
     port: 8080
+    path: /api

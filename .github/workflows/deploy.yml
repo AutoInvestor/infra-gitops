@@ -1,6 +1,12 @@
 name: Deploy
 
 on:
+  pull_request:
+    types: [ opened, synchronize ]
+    branches:
+      - main
+    paths:
+      - helm/**
   push:
     branches:
       - main
@@ -16,7 +22,7 @@ jobs:
       NAMESPACE: ${{ needs.e2e-test.outputs.namespace }}
     steps:
       - name: Check out repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v1
@@ -41,6 +47,18 @@ jobs:
         with:
           version: v3.12.0
 
-      - name: Deploy all to GKE
+      - name: Deploy all to GKE (dry run)
         run: |
-          helm upgrade --install autoinvestor ./helm --namespace autoinvestor --create-namespace --force
+          helm upgrade --install autoinvestor ./helm \
+            --namespace autoinvestor \
+            --create-namespace \
+            --force \
+            --dry-run
+
+      - name: Deploy all to GKE
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        run: |
+          helm upgrade --install autoinvestor ./helm \
+            --namespace autoinvestor \
+            --create-namespace \
+            --force
