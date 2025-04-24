@@ -24,9 +24,17 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
+  {{- if .path }}
+  name: {{ .name }}-load-balancer
+  {{- else }}
   name: {{ .name }}-service
+  {{- end }}
 spec:
+  {{- if .path }}
+  type: LoadBalancer
+  {{- else }}
   type: ClusterIP
+  {{- end }}
   selector:
     app: {{ .name }}
   ports:
