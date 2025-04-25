@@ -21,25 +21,32 @@ spec:
           ports:
             - containerPort: {{ .port }}
 ---
+{{- if .path }}
 apiVersion: v1
 kind: Service
 metadata:
-  {{- if .path }}
-  name: {{ .name }}-load-balancer
-  {{- else }}
   name: {{ .name }}-service
-  {{- end }}
 spec:
-  {{- if .path }}
-  type: LoadBalancer
-  {{- else }}
+  type: NodePort
+  selector:
+    app: {{ .name }}
+  ports:
+    - port: 80
+      targetPort: {{ .port }}
+      protocol: TCP
+{{- else }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .name }}-service
+spec:
   type: ClusterIP
-  {{- end }}
   selector:
     app: {{ .name }}
   ports:
     - name: http
       port: 80
       targetPort: {{ .port }}
+{{- end }}
 ---
 {{- end }}
