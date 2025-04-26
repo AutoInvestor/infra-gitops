@@ -22,13 +22,13 @@ spec:
             - containerPort: {{ .port }}
           env:
             - name: GCP_PROJECT
-              value: { { $.Values.gcpProject | quote } }
+              value: {{ $.Values.gcpProject | quote }}
             - name: MONGODB_URI
-              value: { { $.Values.mongodbUri | quote } }
+              value: {{ $.Values.mongodbUri | quote }}
             - name: PUBSUB_TOPIC
-              value: {{ .name }}
+              value: {{ .name | quote }}
             - name: MONGODB_DB
-              value: {{ .name }}
+              value: {{ .name | quote }}
 ---
 {{- if .path }}
 apiVersion: v1
