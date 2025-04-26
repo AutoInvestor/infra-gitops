@@ -20,6 +20,15 @@ spec:
           imagePullPolicy: Always
           ports:
             - containerPort: {{ .port }}
+          env:
+            - name: GCP_PROJECT
+              value: { { $.Values.gcpProject | quote } }
+            - name: MONGODB_URI
+              value: { { $.Values.mongodbUri | quote } }
+            - name: PUBSUB_TOPIC
+              value: {{ .name }}
+            - name: MONGODB_DB
+              value: {{ .name }}
 ---
 {{- if .path }}
 apiVersion: v1

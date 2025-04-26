@@ -1,5 +1,7 @@
 imageRepository: docker.io/polpinol98
 domain: autoinvestor.alvaromanoso.dev
+gcpProject: ""
+mongodbUri: ""
 
 apps:
   - name: users

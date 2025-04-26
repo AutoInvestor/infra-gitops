@@ -47,13 +47,21 @@ jobs:
         with:
           version: v3.12.0
 
+      - name: Build secret override
+        run: |
+          cat <<EOF > secret-values.yaml
+          gcpProject: "${{ secrets.GCP_PROJECT }}"
+          mongodbUri: "${{ secrets.MONGODB_URI }}"
+          EOF
+
       - name: Deploy all to GKE (dry run)
         run: |
           helm upgrade --install autoinvestor ./helm \
             --namespace autoinvestor \
             --create-namespace \
             --force \
-            --dry-run
+            --dry-run \
+            -f secret-values.yaml
 
       - name: Deploy all to GKE
         if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
@@ -61,4 +69,5 @@ jobs:
           helm upgrade --install autoinvestor ./helm \
             --namespace autoinvestor \
             --create-namespace \
-            --force
+            --force \
+            -f secret-values.yaml
