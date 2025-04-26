@@ -50,7 +50,7 @@ jobs:
       - name: Build secret override
         run: |
           cat <<EOF > secret-values.yaml
-          gcpProject: "${{ secrets.GCP_PROJECT }}"
+          gcpProject: "${{ vars.GCP_PROJECT_ID }}"
           mongodbUri: "${{ secrets.MONGODB_URI }}"
           EOF
 
