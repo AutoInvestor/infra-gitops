@@ -1,0 +1,48 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: latest-news-pinger
+spec:
+  schedule: "* * * * *"
+  concurrencyPolicy: Forbid
+  startingDeadlineSeconds: 30
+  successfulJobsHistoryLimit: 2
+  failedJobsHistoryLimit: 2
+
+  jobTemplate:
+    spec:
+      backoffLimit: 0
+      template:
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: pinger
+              image: alpine/curl:8.7.1
+              env:
+                - name: API_BASE
+                  value: "http://stock-api-svc:8080"
+              command: ["/bin/sh", "-c"]
+              args:
+                - |
+                  set -eo pipefail
+
+                  # jq isn’t in alpine/curl → install it (takes ~1 s, <3 MiB)
+                  apk add --no-cache jq >/dev/null
+
+                  # 1) get list of tickers
+                  companies_json="$(curl -fsSL --connect-timeout 3 "$API_BASE/companies")"
+                  tickers="$(echo "$companies_json" | jq -r '.companies[]' | sort -u)"
+
+                  # 2) hit /news/latest for each ticker
+                  for t in $tickers; do
+                    code="$(curl -s -o /dev/null -w '%{http_code}' --connect-timeout 3 \
+                                    "$API_BASE/companies/$t/news/latest" || true)"
+                    if [ "$code" -ge 200 ] && [ "$code" -lt 400 ]; then
+                      echo "success: $t → $code"
+                    else
+                      echo "error: $t → HTTP $code" >&2
+                    fi
+                  done
+
+                  echo "Finished at $(date -u +'%Y-%m-%dT%H:%M:%SZ')"
+              terminationMessagePolicy: FallbackToLogsOnError
