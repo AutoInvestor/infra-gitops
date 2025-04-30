@@ -20,12 +20,18 @@ resource "google_project_iam_member" "gke_nodes_sa_role" {
   member  = "serviceAccount:${google_service_account.gke_nodes_sa.email}"
 }
 
+resource "kubernetes_namespace" "autoinvestor" {
+  metadata {
+    name = "autoinvestor"
+  }
+}
+
 resource "kubernetes_service_account" "gke_nodes_ksa" {
   depends_on = [google_container_cluster.primary]
 
   metadata {
     name      = "gke-nodes-kubernetes-service-account"
-    namespace = "autoinvestor"
+    namespace = kubernetes_namespace.autoinvestor.metadata[0].name
     annotations = {
       "iam.gke.io/gcp-service-account" = google_service_account.gke_nodes_sa.email
     }
