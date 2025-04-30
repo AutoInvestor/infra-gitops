@@ -20,7 +20,7 @@ spec:
               image: alpine/curl:8.7.1
               env:
                 - name: API_BASE
-                  value: "http://stock-api-svc:8080"
+                  value: "http://market-feeling-service"
               command: ["/bin/sh", "-c"]
               args:
                 - |
