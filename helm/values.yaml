@@ -6,7 +6,7 @@ mongodbUri: ""
 apps:
   - name: users
     image: autoinvestor-users
-    version: 2.5.0
+    version: 2.6.0
     port: 8080
 
   - name: alerts
