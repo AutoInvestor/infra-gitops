@@ -21,6 +21,10 @@ spec:
           ports:
             - containerPort: {{ .port }}
           env:
+            {{- if .springProfile }}
+            - name: SPRING_PROFILES_ACTIVE
+              value: {{ .springProfile | quote }}
+            {{- end }}
             - name: GCP_PROJECT
               value: {{ $.Values.gcpProject | quote }}
             - name: MONGODB_URI
