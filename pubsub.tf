@@ -19,12 +19,16 @@ locals {
 # Publishers
 
 resource "google_pubsub_topic" "topic" {
+  depends_on = [google_project_service.active_api]
+
   for_each = local.topics
 
   name = each.key
 }
 
 resource "google_pubsub_topic" "dlq_topic" { # Como este topic no tiene subscribers el mensaje simplemente desaparece
+  depends_on = [google_project_service.active_api]
+
   name = "dead-letter-topic"
 }
 

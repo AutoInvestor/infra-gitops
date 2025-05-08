@@ -1,49 +1,11 @@
-locals {
-  gke_nodes_sa_roles = [
-    "roles/logging.logWriter",
-    "roles/monitoring.metricWriter",
-    "roles/pubsub.subscriber",
-    "roles/pubsub.publisher",
-  ]
-}
-
-resource "google_service_account" "gke_nodes_sa" {
-  account_id   = "gke-nodes-service-account"
-  display_name = "GKE Nodes Service Account"
-}
-
-resource "google_project_iam_member" "gke_nodes_sa_role" {
-  for_each = toset(local.gke_nodes_sa_roles)
-
-  project = var.project_id
-  role    = each.key
-  member  = "serviceAccount:${google_service_account.gke_nodes_sa.email}"
-}
-
-resource "kubernetes_namespace" "autoinvestor" {
-  metadata {
-    name = "autoinvestor"
-  }
-}
-
-resource "kubernetes_service_account" "gke_nodes_ksa" {
-  depends_on = [google_container_cluster.primary]
-
-  metadata {
-    name      = "gke-nodes-kubernetes-service-account"
-    namespace = kubernetes_namespace.autoinvestor.metadata[0].name
-    annotations = {
-      "iam.gke.io/gcp-service-account" = google_service_account.gke_nodes_sa.email
-    }
-  }
-}
-
 resource "google_container_cluster" "primary" {
+  depends_on = [google_project_service.active_api]
+
   name     = var.gke_cluster_name
   location = var.gke_zone
 
   workload_identity_config {
-    workload_pool = "${var.project_id}.svc.id.goog"
+    workload_pool = "${data.google_client_config.provider.project}.svc.id.goog"
   }
 
   remove_default_node_pool = true
@@ -54,16 +16,6 @@ resource "google_container_cluster" "primary" {
       start_time = "01:00"
     }
   }
-}
-
-resource "google_service_account_iam_binding" "gke_nodes_sa_ksa_binding" {
-  service_account_id = google_service_account.gke_nodes_sa.id
-
-  role = "roles/iam.workloadIdentityUser"
-
-  members = [
-    "serviceAccount:${google_container_cluster.primary.workload_identity_config[0].workload_pool}[${kubernetes_service_account.gke_nodes_ksa.metadata[0].namespace}/${kubernetes_service_account.gke_nodes_ksa.metadata[0].name}]"
-  ]
 }
 
 resource "google_container_node_pool" "primary_default_pool" {
@@ -82,12 +34,26 @@ resource "google_container_node_pool" "primary_default_pool" {
   }
 }
 
-data "google_client_config" "provider" {}
+resource "google_service_account" "gke_nodes_sa" {
+  depends_on = [google_project_service.active_api]
 
-provider "kubernetes" {
-  host  = "https://${google_container_cluster.primary.endpoint}"
-  token = data.google_client_config.provider.access_token
-  cluster_ca_certificate = base64decode(
-    google_container_cluster.primary.master_auth[0].cluster_ca_certificate,
-  )
+  account_id   = "gke-nodes-service-account"
+  display_name = "GKE Nodes Service Account"
+}
+
+resource "google_project_iam_member" "gke_nodes_sa_role" {
+  for_each = toset(local.gke_nodes_sa_roles)
+
+  project = data.google_client_config.provider.project
+  role    = each.key
+  member  = "serviceAccount:${google_service_account.gke_nodes_sa.email}"
+}
+
+locals {
+  gke_nodes_sa_roles = [
+    "roles/logging.logWriter",
+    "roles/monitoring.metricWriter",
+    "roles/pubsub.subscriber",
+    "roles/pubsub.publisher",
+  ]
 }
