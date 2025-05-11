@@ -50,7 +50,7 @@ jobs:
       - name: Login to Artifact Registry
         if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
         run: |
-          echo '${{ secrets.GCP_SA_KEY }}' | helm registry login "${HELM_REPO}" \
+          echo '${{ secrets.GCP_SA_KEY }}' | helm registry login ${{ vars.GCP_REGION }}-docker.pkg.dev \
             --username=_json_key \
             --password-stdin
 
