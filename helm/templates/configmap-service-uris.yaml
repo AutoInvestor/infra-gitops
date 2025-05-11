@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: service-uris
+data:
+  USERS_BASE_URL: "http://users-service"
+  CORE_BASE_URL: "http://core-service"
+  MARKET_FEELING_BASE_URL: "http://market-feeling-service"
+  ALERTS_BASE_URL: "http://alerts-service"
+  DECISION_MAKING_BASE_URL: "http://decision-making-service"
+  PORTFOLIO_BASE_URL: "http://portfolio-service"

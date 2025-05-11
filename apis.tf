@@ -16,5 +16,6 @@ locals {
     "storage.googleapis.com",
     "certificatemanager.googleapis.com",
     "cloudresourcemanager.googleapis.com",
+    "artifactregistry.googleapis.com",
   ]
 }

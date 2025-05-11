@@ -26,14 +26,23 @@ jobs:
           repository: AutoInvestor/infra-gitops
           token: ${{ secrets.CD_REPO_TOKEN }}
 
+      - id: calculate_version
+        run: |
+          current_version=$(sed -n 's/^version: \([0-9]*\.[0-9]*\.[0-9]*\)/\1/p' helm/Chart.yaml)
+          IFS='.' read -r major minor patch <<< "$current_version"
+          echo "new_version=${major}.${minor}.$((patch + 1))" >> $GITHUB_OUTPUT
+
       - name: Update version in YAML
         run: |
           sed -i '/image: ${{ inputs.image }}/ {n; s/version: .*/version: ${{ inputs.version }}/}' helm/values.yaml
+          sed -i 's/^version: .*/version: ${{ steps.calculate_version.outputs.new_version }}/g' helm/Chart.yaml
+          sed -i 's/^appVersion: .*/appVersion: ${{ steps.calculate_version.outputs.new_version }}/g' helm/Chart.yaml
 
       - name: Commit changes
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add helm/values.yaml
+          git add helm/Chart.yaml
           git commit -m "Update '${{ inputs.image }}' version to '${{ inputs.version }}'"
           git push

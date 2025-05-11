@@ -25,6 +25,8 @@ spec:
                 name: mongodb
             - configMapRef:
                 name: gcp-project
+            - configMapRef:
+                name: service-uris
             {{- if .envConfig }}
             {{- $configName := printf "%s-environment" .name }}
             - configMapRef:

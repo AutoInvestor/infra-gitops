@@ -47,6 +47,16 @@ jobs:
         with:
           version: v3.12.0
 
+      - name: Login to Artifact Registry
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        run: |
+          helm registry login ${{ vars.GCP_REGION }}-docker.pkg.dev \
+            --username=_json_key \
+            --password="${{ secrets.GCP_SA_KEY }}"
+          
+          helm repo add helm-repo oci://${{ vars.GCP_REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/helm-charts
+          helm repo update
+
       - name: Build secret override
         run: |
           cat <<EOF > secret-values.yaml
@@ -55,6 +65,7 @@ jobs:
           EOF
 
       - name: Deploy all to GKE (dry run)
+        if: github.event_name == 'pull_request'
         run: |
           helm upgrade --install autoinvestor ./helm \
             --namespace autoinvestor \
@@ -63,11 +74,22 @@ jobs:
             --dry-run \
             -f secret-values.yaml
 
+      - name: Push to registry
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        run: |
+          cd helm
+          current_version=$(sed -n 's/^version: \([0-9]*\.[0-9]*\.[0-9]*\)/\1/p' Chart.yaml)
+          
+          helm package .
+          helm push "autoinvestor-${current_version}.tgz" helm-repo
+
       - name: Deploy all to GKE
         if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
         run: |
-          helm upgrade --install autoinvestor ./helm \
+          current_version=$(sed -n 's/^version: \([0-9]*\.[0-9]*\.[0-9]*\)/\1/p' helm/Chart.yaml)
+          
+          helm upgrade --install autoinvestor helm-repo/autoinvestor \
             --namespace autoinvestor \
             --create-namespace \
-            --force \
+            --version "${current_version}" \
             -f secret-values.yaml
