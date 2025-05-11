@@ -13,26 +13,33 @@ spec:
       labels:
         app: {{ .name }}
     spec:
-      serviceAccountName: "gke-nodes-kubernetes-service-account"
+      serviceAccountName: "kubernetes-apps-sa"
       containers:
         - name: {{ .name }}
           image: "{{ $.Values.imageRepository }}/{{ .image }}:{{ .version }}"
           imagePullPolicy: Always
           ports:
             - containerPort: {{ .port }}
+          envFrom:
+            - configMapRef:
+                name: mongodb
+            - configMapRef:
+                name: gcp-project
+            {{- $configName := printf "%s-environment" .name }}
+            {{- $cm := (lookup "v1" "ConfigMap" $.Release.Namespace $configName) }}
+            {{- if $cm }}
+            - configMapRef:
+                name: {{ $configName }}
+            {{- end }}
           env:
             {{- if .springProfile }}
             - name: SPRING_PROFILES_ACTIVE
-              value: {{ .springProfile | quote }}
+              value: "{{ .springProfile }}"
             {{- end }}
-            - name: GCP_PROJECT
-              value: {{ $.Values.gcpProject | quote }}
-            - name: MONGODB_URI
-              value: {{ $.Values.mongodbUri | quote }}
             - name: PUBSUB_TOPIC
-              value: {{ .name | quote }}
+              value: "{{ .name }}"
             - name: MONGODB_DB
-              value: {{ .name | quote }}
+              value: "{{ .name }}"
 ---
 {{- if .path }}
 apiVersion: v1
