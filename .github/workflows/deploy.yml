@@ -19,7 +19,7 @@ jobs:
     name: Deploy
     runs-on: ubuntu-latest
     env:
-      NAMESPACE: ${{ needs.e2e-test.outputs.namespace }}
+      HELM_REPO: "oci://${{ vars.GCP_REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/helm-charts"
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -50,14 +50,9 @@ jobs:
       - name: Login to Artifact Registry
         if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
         run: |
-          echo '${{ secrets.GCP_SA_KEY }}' | helm registry login "https://${{ vars.GCP_REGION }}-docker.pkg.dev" \
+          echo '${{ secrets.GCP_SA_KEY }}' | helm registry login "${HELM_REPO}" \
             --username=_json_key \
             --password-stdin
-
-      - name: Add helm repository
-        run: |
-          helm repo add helm-repo oci://${{ vars.GCP_REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT_ID }}/helm-charts
-          helm repo update
 
       - name: Build secret override
         run: |
@@ -83,14 +78,16 @@ jobs:
           current_version=$(sed -n 's/^version: \([0-9]*\.[0-9]*\.[0-9]*\)/\1/p' Chart.yaml)
           
           helm package .
-          helm push "autoinvestor-${current_version}.tgz" helm-repo
+          helm push "autoinvestor-${current_version}.tgz" "${HELM_REPO}"
 
       - name: Deploy all to GKE
         if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
         run: |
           current_version=$(sed -n 's/^version: \([0-9]*\.[0-9]*\.[0-9]*\)/\1/p' helm/Chart.yaml)
           
-          helm upgrade --install autoinvestor helm-repo/autoinvestor \
+          helm pull "${HELM_REPO}/autoinvestor" --version "${current_version}"
+
+          helm upgrade --install autoinvestor "autoinvestor-${current_version}.tgz" \
             --namespace autoinvestor \
             --create-namespace \
             --version "${current_version}" \
