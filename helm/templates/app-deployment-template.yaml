@@ -25,17 +25,12 @@ spec:
                 name: mongodb
             - configMapRef:
                 name: gcp-project
+            {{- if .envConfig }}
             {{- $configName := printf "%s-environment" .name }}
-            {{- $cm := (lookup "v1" "ConfigMap" $.Release.Namespace $configName) }}
-            {{- if $cm }}
             - configMapRef:
                 name: {{ $configName }}
             {{- end }}
           env:
-            {{- if .springProfile }}
-            - name: SPRING_PROFILES_ACTIVE
-              value: "{{ .springProfile }}"
-            {{- end }}
             - name: PUBSUB_TOPIC
               value: "{{ .name }}"
             - name: MONGODB_DB

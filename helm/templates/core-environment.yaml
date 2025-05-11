@@ -1,12 +1,6 @@
-{{- $target := dict }}
-{{- range .Values.apps }}
-  {{- if eq .name "core" }}
-    {{- $target = .springProfile }}
-  {{- end }}
-{{- end }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: core-environment
 data:
-  SPRING_PROFILES_ACTIVE: "{{ $target }}"
+  SPRING_PROFILES_ACTIVE: "prod"
