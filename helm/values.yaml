@@ -46,3 +46,4 @@ apps:
     version: 2.21.0
     port: 8080
     path: /api
+    envConfig: true
