@@ -21,16 +21,23 @@ spec:
           ports:
             - containerPort: {{ .port }}
           envFrom:
-            - configMapRef:
+            - secretRef:
                 name: mongodb
             - configMapRef:
                 name: gcp-project
             - configMapRef:
                 name: service-uris
-            {{- if .envConfig }}
-            {{- $configName := printf "%s-environment" .name }}
+            {{- if and .configs (gt (len .configs) 0) }}
+            {{- range .configs }}
             - configMapRef:
-                name: {{ $configName }}
+                name: {{ . }}
+            {{- end }}
+            {{- end }}
+            {{- if and .secretConfigs (gt (len .secretConfigs) 0) }}
+            {{- range .secretConfigs }}
+            - secretRef:
+                name: {{ . }}
+            {{- end }}
             {{- end }}
           env:
             - name: PUBSUB_TOPIC

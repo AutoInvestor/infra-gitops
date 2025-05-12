@@ -47,19 +47,8 @@ jobs:
         with:
           version: v3.12.0
 
-      - name: Login to Artifact Registry
-        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
-        run: |
-          echo '${{ secrets.GCP_SA_KEY }}' | helm registry login ${{ vars.GCP_REGION }}-docker.pkg.dev \
-            --username=_json_key \
-            --password-stdin
-
-      - name: Build secret override
-        run: |
-          cat <<EOF > secret-values.yaml
-          gcpProject: "${{ vars.GCP_PROJECT_ID }}"
-          mongodbUri: "${{ secrets.MONGODB_URI }}"
-          EOF
+      - name: Helm lint
+        run: helm lint ./helm
 
       - name: Deploy all to GKE (dry run)
         if: github.event_name == 'pull_request'
@@ -69,7 +58,15 @@ jobs:
             --create-namespace \
             --force \
             --dry-run \
-            -f secret-values.yaml
+            --set gcpProject="${{ vars.GCP_PROJECT_ID }}" \
+            --set mongodbUri="${{ secrets.MONGODB_URI }}"
+
+      - name: Login to Artifact Registry
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        run: |
+          echo '${{ secrets.GCP_SA_KEY }}' | helm registry login ${{ vars.GCP_REGION }}-docker.pkg.dev \
+            --username=_json_key \
+            --password-stdin
 
       - name: Push to registry
         if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
@@ -91,4 +88,5 @@ jobs:
             --namespace autoinvestor \
             --create-namespace \
             --version "${current_version}" \
-            -f secret-values.yaml
+            --set gcpProject="${{ vars.GCP_PROJECT_ID }}" \
+            --set mongodbUri="${{ secrets.MONGODB_URI }}"

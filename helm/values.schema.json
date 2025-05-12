@@ -1,0 +1,61 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "imageRepository": {
+      "type": "string",
+      "description": "Container registry path for app images"
+    },
+    "domain": {
+      "type": "string",
+      "description": "Base domain for the deployment"
+    },
+    "gcpProject": {
+      "type": "string",
+      "description": "Google Cloud project ID (may be empty)"
+    },
+    "mongodbUri": {
+      "type": "string",
+      "description": "MongoDB connection URI"
+    },
+    "apps": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["name", "image", "version", "port"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Name of the app"
+          },
+          "image": {
+            "type": "string",
+            "description": "Name of the container image"
+          },
+          "version": {
+            "type": "string",
+            "description": "Version tag for the image"
+          },
+          "port": {
+            "type": "integer",
+            "description": "Port the app listens on"
+          },
+          "configs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Optional list of ConfigMaps to mount"
+          },
+          "path": {
+            "type": "string",
+            "description": "Optional path to expose the app on (e.g., '/', '/api')"
+          }
+        }
+      },
+      "description": "List of apps to deploy"
+    }
+  },
+  "required": ["imageRepository", "domain", "gcpProject", "mongodbUri", "apps"]
+}
