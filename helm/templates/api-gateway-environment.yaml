@@ -3,4 +3,6 @@ kind: ConfigMap
 metadata:
   name: api-gateway-environment
 data:
-  OKTA_RESOURCE_SERVER_URI: "https://dev-20214328.okta.com/oauth2/default"
+  OKTA_RESOURCE_SERVER_URI: "{{ .Values.okta.resourceUri }}"
+  OKTA_CLIENT_ID: "{{ .Values.okta.clientId }}"
+  AUTOINVESTOR_URI: "https://{{ .Values.domain }}"

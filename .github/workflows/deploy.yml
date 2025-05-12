@@ -56,6 +56,7 @@ jobs:
         with:
           secrets: |-
             mongodb-uri:${{ vars.GCP_PROJECT_ID }}/mongodb-uri
+            okta-client-secret:${{ vars.GCP_PROJECT_ID }}/okta-client-secret
 
       - name: Deploy all to GKE (dry run)
         if: github.event_name == 'pull_request'
@@ -66,7 +67,8 @@ jobs:
             --force \
             --dry-run \
             --set gcpProject="${{ vars.GCP_PROJECT_ID }}" \
-            --set mongodbUri="${{ steps.secrets.outputs.mongodb-uri }}"
+            --set mongodbUri="${{ steps.secrets.outputs.mongodb-uri }}" \
+            --set okta.clientSecret="${{ steps.secrets.outputs.okta-client-secret }}"
 
       - name: Login to Artifact Registry
         if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
@@ -96,4 +98,5 @@ jobs:
             --create-namespace \
             --version "${current_version}" \
             --set gcpProject="${{ vars.GCP_PROJECT_ID }}" \
-            --set mongodbUri="${{ steps.secrets.outputs.mongodb-uri }}"
+            --set mongodbUri="${{ steps.secrets.outputs.mongodb-uri }}" \
+            --set okta.clientSecret="${{ steps.secrets.outputs.okta-client-secret }}"
