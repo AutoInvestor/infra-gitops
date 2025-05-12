@@ -21,7 +21,7 @@ apps:
 
   - name: market-feeling
     image: autoinvestor-market-feeling
-    version: 1.0.1
+    version: 1.0.2
     port: 8080
 
   - name: decision-making
