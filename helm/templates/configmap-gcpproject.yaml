@@ -3,4 +3,4 @@ kind: ConfigMap
 metadata:
   name: gcp-project
 data:
-  GCP_PROJECT: "{{ .Values.gcpProject }}"
+  GCP_PROJECT: "{{ required "gcpProject is required and cannot be empty" .Values.gcpProject }}"

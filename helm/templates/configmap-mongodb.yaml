@@ -1,6 +1,7 @@
 apiVersion: v1
-kind: ConfigMap
+kind: Secret
+type: Opaque
 metadata:
   name: mongodb
 data:
-  MONGODB_URI: "{{ .Values.mongodbUri }}"
+  MONGODB_URI: "{{ required "mongodbUri is required and cannot be empty" .Values.mongodbUri | b64enc }}"

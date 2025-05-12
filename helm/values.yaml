@@ -33,7 +33,8 @@ apps:
     image: autoinvestor-core
     version: 2.0.1
     port: 8080
-    envConfig: true
+    configs:
+      - core-environment
 
   - name: frontend
     image: autoinvestor-frontend
@@ -46,4 +47,5 @@ apps:
     version: 2.24.0
     port: 8080
     path: /api
-    envConfig: true
+    configs:
+      - api-gateway-environment
