@@ -1,4 +1,4 @@
-imageRepository: docker.io/polpinol98
+imageRepository: europe-west3-docker.pkg.dev/autoinvestor-tfm/docker-images
 domain: autoinvestor.alvaromanoso.dev
 gcpProject: ""
 mongodbUri: ""
