@@ -51,9 +51,6 @@ resource "google_project_iam_member" "gke_nodes_sa_role" {
 
 locals {
   gke_nodes_sa_roles = [
-    "roles/logging.logWriter",
-    "roles/monitoring.metricWriter",
-    "roles/pubsub.subscriber",
-    "roles/pubsub.publisher",
+    "roles/container.nodeServiceAccount",
   ]
 }
