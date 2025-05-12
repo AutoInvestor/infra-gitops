@@ -3,4 +3,4 @@ kind: ConfigMap
 metadata:
   name: api-gateway-environment
 data:
-  OKTA_RESOURCE_SERVER_URI: "https://dev-90706258.okta.com/oauth2/default"
+  OKTA_RESOURCE_SERVER_URI: "https://dev-20214328.okta.com/oauth2/default"
