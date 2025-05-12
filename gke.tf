@@ -52,5 +52,6 @@ resource "google_project_iam_member" "gke_nodes_sa_role" {
 locals {
   gke_nodes_sa_roles = [
     "roles/container.nodeServiceAccount",
+    "roles/artifactregistry.reader",
   ]
 }
