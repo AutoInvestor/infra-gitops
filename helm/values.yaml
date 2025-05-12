@@ -3,6 +3,11 @@ domain: autoinvestor.alvaromanoso.dev
 gcpProject: ""
 mongodbUri: ""
 
+okta:
+  resourceUri: "https://dev-20214328.okta.com/oauth2/default"
+  clientId: "0oaop5ffwazcO5OoV5d7"
+  clientSecret: ""
+
 apps:
   - name: users
     image: autoinvestor-users
@@ -51,3 +56,5 @@ apps:
     path: /api
     configs:
       - api-gateway-environment
+    secretConfigs:
+      - api-gateway-environment-secrets
