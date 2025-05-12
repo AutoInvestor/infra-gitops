@@ -26,7 +26,7 @@ apps:
 
   - name: market-feeling
     image: autoinvestor-market-feeling
-    version: 1.0.4
+    version: 1.0.5
     port: 8080
     configs:
       - market-feeling-environment
