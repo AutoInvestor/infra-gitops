@@ -46,7 +46,7 @@ apps:
 
   - name: api-gateway
     image: autoinvestor-api-gateway
-    version: 2.27.0
+    version: 2.27.1
     port: 8080
     path: /api
     configs:
