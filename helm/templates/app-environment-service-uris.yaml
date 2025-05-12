@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: service-uris
+  name: app-environment-service-uris
 data:
   USERS_BASE_URL: "http://users-service"
   CORE_BASE_URL: "http://core-service"

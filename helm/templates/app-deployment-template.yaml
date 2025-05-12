@@ -22,11 +22,11 @@ spec:
             - containerPort: {{ .port }}
           envFrom:
             - secretRef:
-                name: mongodb
+                name: app-environment-secret-mongodb
             - configMapRef:
-                name: gcp-project
+                name: app-environment-gcp-project
             - configMapRef:
-                name: service-uris
+                name: app-environment-service-uris
             {{- if and .configs (gt (len .configs) 0) }}
             {{- range .configs }}
             - configMapRef:
