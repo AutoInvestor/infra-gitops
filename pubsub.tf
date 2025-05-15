@@ -5,7 +5,7 @@ locals {
     "decision-making" = ["alerts"],
     "alerts"          = [],
     "portfolio"       = ["alerts"],
-    "core"            = ["market-feeling", "decision-making", "alerts"],
+    "core"            = ["market-feeling", "decision-making", "alerts", "news-scraper"],
     "news-scraper"    = ["market-feeling"],
   }
 
