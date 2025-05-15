@@ -27,18 +27,12 @@ spec:
                 name: app-environment-gcp-project
             - configMapRef:
                 name: app-environment-service-uris
-            {{- if and .configs (gt (len .configs) 0) }}
-            {{- range .configs }}
             - configMapRef:
-                name: {{ . }}
-            {{- end }}
-            {{- end }}
-            {{- if and .secretConfigs (gt (len .secretConfigs) 0) }}
-            {{- range .secretConfigs }}
+                name: {{ printf "%s-environment" .name }}
+                optional: true
             - secretRef:
-                name: {{ . }}
-            {{- end }}
-            {{- end }}
+                name: {{ printf "%s-environment-secrets" .name }}
+                optional: true
           env:
             - name: PUBSUB_TOPIC
               value: "{{ .name }}"
