@@ -4,3 +4,4 @@ metadata:
   name: market-feeling-environment
 data:
   PUBSUB_SUBSCRIPTION_CORE: "market-feeling-to-core"
+  PUBSUB_SUBSCRIPTION_NEWS_SCRAPER: "market-feeling-to-news-scraper"

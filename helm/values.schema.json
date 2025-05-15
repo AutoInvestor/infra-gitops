@@ -55,20 +55,6 @@
             "type": "integer",
             "description": "Port the app listens on"
           },
-          "configs": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "description": "Optional list of ConfigMaps to mount"
-          },
-          "secretConfigs": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            },
-            "description": "Optional list of Secrets to mount"
-          },
           "path": {
             "type": "string",
             "description": "Optional path to expose the app on (e.g., '/', '/api')"
