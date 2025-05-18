@@ -57,6 +57,7 @@ jobs:
           secrets: |-
             mongodb-uri:${{ vars.GCP_PROJECT_ID }}/mongodb-uri
             okta-client-secret:${{ vars.GCP_PROJECT_ID }}/okta-client-secret
+            okta-hook-auth-header-value:${{ vars.GCP_PROJECT_ID }}/okta-hook-auth-header-value
 
       - name: Deploy all to GKE (dry run)
         if: github.event_name == 'pull_request'
@@ -68,7 +69,8 @@ jobs:
             --dry-run \
             --set gcpProject="${{ vars.GCP_PROJECT_ID }}" \
             --set mongodbUri="${{ steps.secrets.outputs.mongodb-uri }}" \
-            --set okta.clientSecret="${{ steps.secrets.outputs.okta-client-secret }}"
+            --set okta.clientSecret="${{ steps.secrets.outputs.okta-client-secret }}" \
+            --set okta.hookAuthHeaderValue="${{ steps.secrets.outputs.okta-hook-auth-header-value }}"
 
       - name: Login to Artifact Registry
         if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
@@ -99,4 +101,5 @@ jobs:
             --version "${current_version}" \
             --set gcpProject="${{ vars.GCP_PROJECT_ID }}" \
             --set mongodbUri="${{ steps.secrets.outputs.mongodb-uri }}" \
-            --set okta.clientSecret="${{ steps.secrets.outputs.okta-client-secret }}"
+            --set okta.clientSecret="${{ steps.secrets.outputs.okta-client-secret }}" \
+            --set okta.hookAuthHeaderValue="${{ steps.secrets.outputs.okta-hook-auth-header-value }}"
