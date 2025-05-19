@@ -1,14 +1,14 @@
-resource "google_iam_workload_identity_pool" "github_pool" {
+resource "google_iam_workload_identity_pool" "github_actions_pool" {
   depends_on = [google_project_service.active_api]
 
-  workload_identity_pool_id = "github-pool"
+  workload_identity_pool_id = "github-actions-pool"
   display_name              = "GitHub Pool"
   description               = "Identity pool for GitHub Actions"
   disabled                  = false
 }
 
 resource "google_iam_workload_identity_pool_provider" "github_provider" {
-  workload_identity_pool_id          = google_iam_workload_identity_pool.github_pool.workload_identity_pool_id
+  workload_identity_pool_id          = google_iam_workload_identity_pool.github_actions_pool.workload_identity_pool_id
   workload_identity_pool_provider_id = "github-provider"
   display_name                       = "GitHub Provider"
   description                        = "OIDC provider for GitHub Actions"
@@ -39,7 +39,7 @@ resource "google_service_account_iam_binding" "deployer_allow_wif_impersonation"
   service_account_id = google_service_account.github_sa_deployer.id
   role               = "roles/iam.workloadIdentityUser"
   members = [
-    "principalSet://iam.googleapis.com/projects/${data.google_project.project.number}/locations/global/workloadIdentityPools/${google_iam_workload_identity_pool.github_pool.workload_identity_pool_id}/attribute.repository/${local.deployer_repo}"
+    "principalSet://iam.googleapis.com/projects/${data.google_project.project.number}/locations/global/workloadIdentityPools/${google_iam_workload_identity_pool.github_actions_pool.workload_identity_pool_id}/attribute.repository/${local.deployer_repo}"
   ]
 }
 
@@ -65,7 +65,7 @@ resource "google_service_account_iam_binding" "builder_allow_wif_impersonation" 
   role               = "roles/iam.workloadIdentityUser"
   members = [
     for repo in local.builder_repos :
-    "principalSet://iam.googleapis.com/projects/${data.google_project.project.number}/locations/global/workloadIdentityPools/${google_iam_workload_identity_pool.github_pool.workload_identity_pool_id}/attribute.repository/${repo}"
+    "principalSet://iam.googleapis.com/projects/${data.google_project.project.number}/locations/global/workloadIdentityPools/${google_iam_workload_identity_pool.github_actions_pool.workload_identity_pool_id}/attribute.repository/${repo}"
   ]
 }
 
@@ -74,7 +74,7 @@ resource "google_service_account_iam_binding" "builder_allow_token_creator" {
   role               = "roles/iam.serviceAccountTokenCreator"
   members = [
     for repo in local.builder_repos :
-    "principalSet://iam.googleapis.com/projects/${data.google_project.project.number}/locations/global/workloadIdentityPools/${google_iam_workload_identity_pool.github_pool.workload_identity_pool_id}/attribute.repository/${repo}"
+    "principalSet://iam.googleapis.com/projects/${data.google_project.project.number}/locations/global/workloadIdentityPools/${google_iam_workload_identity_pool.github_actions_pool.workload_identity_pool_id}/attribute.repository/${repo}"
   ]
 }
 
