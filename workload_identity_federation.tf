@@ -32,7 +32,7 @@ resource "google_service_account" "github_sa_deployer" {
   depends_on = [google_project_service.active_api]
 
   account_id   = "github-actions-sa-deployer"
-  display_name = "Service Account for GitHub Actions Project Manager"
+  display_name = "Service Account for GitHub Actions Deployer"
 }
 
 resource "google_service_account_iam_binding" "deployer_allow_wif_impersonation" {
@@ -57,7 +57,7 @@ resource "google_service_account" "github_sa_builder" {
   depends_on = [google_project_service.active_api]
 
   account_id   = "github-actions-sa-builder"
-  display_name = "Service Account for GitHub Actions Artifact Publisher"
+  display_name = "Service Account for GitHub Actions Builder"
 }
 
 resource "google_service_account_iam_binding" "builder_allow_wif_impersonation" {
