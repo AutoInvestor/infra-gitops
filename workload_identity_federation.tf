@@ -70,6 +70,15 @@ resource "google_service_account_iam_binding" "builder_allow_wif_impersonation" 
   ]
 }
 
+resource "google_service_account_iam_binding" "builder_allow_token_creation" {
+  service_account_id = google_service_account.github_sa_builder.id
+  role               = "roles/iam.serviceAccountTokenCreator"
+  members = [
+    for repo in local.builder_repos :
+    "principalSet://iam.googleapis.com/projects/${data.google_project.project.number}/locations/global/workloadIdentityPools/${google_iam_workload_identity_pool.github_pool.workload_identity_pool_id}/attribute.repository/${repo}"
+  ]
+}
+
 resource "google_project_iam_member" "github_sa_builder_permission" {
   for_each = toset(local.builder_roles)
 
@@ -100,6 +109,5 @@ locals {
   ]
   builder_roles = [
     "roles/artifactregistry.writer",
-    "roles/iam.serviceAccounts.getAccessToken",
   ]
 }
