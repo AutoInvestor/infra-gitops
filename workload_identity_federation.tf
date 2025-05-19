@@ -17,10 +17,9 @@ resource "google_iam_workload_identity_pool_provider" "github_provider" {
   attribute_mapping = {
     "google.subject"             = "assertion.sub"
     "attribute.repository"       = "assertion.repository"
-    "attribute.repository_owner" = "assertion.repository_owner"
   }
 
-  attribute_condition = "attribute.repository == assertion.repository && attribute.repository_owner == assertion.repository_owner"
+  attribute_condition = "attribute.repository != ''"
 
   oidc {
     issuer_uri = "https://token.actions.githubusercontent.com"
