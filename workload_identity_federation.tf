@@ -99,6 +99,7 @@ locals {
     "autoinvestor/alerts",
   ]
   builder_roles = [
-    "roles/artifactregistry.writer"
+    "roles/artifactregistry.writer",
+    "iam.serviceAccounts.getAccessToken",
   ]
 }
