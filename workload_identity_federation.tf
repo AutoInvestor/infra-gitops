@@ -15,7 +15,6 @@ resource "google_iam_workload_identity_pool_provider" "github_provider" {
 
   attribute_mapping = {
     "google.subject"       = "assertion.sub"
-    "attribute.actor"      = "assertion.actor"
     "attribute.repository" = "assertion.repository"
   }
 
@@ -37,8 +36,14 @@ resource "google_service_account_iam_binding" "deployer_allow_wif_impersonation"
   service_account_id = google_service_account.github_sa_deployer.name
   role               = "roles/iam.workloadIdentityUser"
   members = [
-    "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github_pool.name}/attribute.repository/${local.deployer_repo}"
+    "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github_pool.name}"
   ]
+
+  condition {
+    title       = "Limit to trusted repos"
+    description = "Only allow specific GitHub repos"
+    expression  = "attribute.repository == '${local.deployer_repo}'"
+  }
 }
 
 resource "google_project_iam_member" "github_sa_deployer_permission" {
@@ -62,9 +67,17 @@ resource "google_service_account_iam_binding" "builder_allow_wif_impersonation" 
   service_account_id = google_service_account.github_sa_builder.name
   role               = "roles/iam.workloadIdentityUser"
   members = [
-    for repo in local.builder_repos :
-    "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github_pool.name}/attribute.repository/${repo}"
+    "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github_pool.name}"
   ]
+
+  condition {
+    title       = "Limit to trusted repos"
+    description = "Only allow specific GitHub repos"
+    expression = join(" || ", [
+      for repo in local.builder_repos :
+      "attribute.repository == '${repo}'"
+    ])
+  }
 }
 
 resource "google_project_iam_member" "github_sa_builder_permission" {
