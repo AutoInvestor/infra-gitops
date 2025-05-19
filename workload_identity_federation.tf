@@ -87,7 +87,7 @@ resource "google_project_iam_member" "github_sa_builder_permission" {
 }
 
 locals {
-  deployer_repo = "autoinvestor/infra-gitops"
+  deployer_repo = "AutoInvestor/infra-gitops"
   deployer_roles = [
     "roles/editor",
     "roles/iam.serviceAccountAdmin",
@@ -95,16 +95,16 @@ locals {
   ]
 
   builder_repos = [
-    "autoinvestor/infra-gitops",
-    "autoinvestor/api-gateway",
-    "autoinvestor/market-feeling",
-    "autoinvestor/core",
-    "autoinvestor/users",
-    "autoinvestor/frontend",
-    "autoinvestor/news-scraper",
-    "autoinvestor/portfolio",
-    "autoinvestor/decision-making",
-    "autoinvestor/alerts",
+    "AutoInvestor/infra-gitops",
+    "AutoInvestor/api-gateway",
+    "AutoInvestor/market-feeling",
+    "AutoInvestor/core",
+    "AutoInvestor/users",
+    "AutoInvestor/frontend",
+    "AutoInvestor/news-scraper",
+    "AutoInvestor/portfolio",
+    "AutoInvestor/decision-making",
+    "AutoInvestor/alerts",
   ]
   builder_roles = [
     "roles/artifactregistry.writer",
