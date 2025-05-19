@@ -14,10 +14,9 @@ resource "google_iam_workload_identity_pool_provider" "github_provider" {
   description                        = "OIDC provider for GitHub Actions"
 
   attribute_mapping = {
-    "google.subject"             = "assertion.sub"
-    "attribute.repository"       = "assertion.repository"
-    "attribute.actor"            = "assertion.actor"
-    "attribute.repository_owner" = "assertion.repository_owner"
+    "google.subject"       = "assertion.sub"
+    "attribute.sub"        = "attribute.sub"
+    "attribute.repository" = "assertion.repository"
   }
 
   oidc {
@@ -80,7 +79,8 @@ locals {
   deployer_repo = "autoinvestor/infra-gitops"
   deployer_roles = [
     "roles/editor",
-    "roles/iam.admin"
+    "roles/iam.serviceAccountAdmin",
+    "roles/resourcemanager.projectIamAdmin",
   ]
 
   builder_repos = [
