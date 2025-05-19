@@ -36,7 +36,7 @@ resource "google_service_account_iam_binding" "deployer_allow_wif_impersonation"
   service_account_id = google_service_account.github_sa_deployer.name
   role               = "roles/iam.workloadIdentityUser"
   members = [
-    "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github_pool.name}"
+    "principalSet://iam.googleapis.com/projects/${data.google_project.project.number}/locations/global/workloadIdentityPools/${google_iam_workload_identity_pool.github_pool.workload_identity_pool_id}"
   ]
 
   condition {
@@ -67,7 +67,7 @@ resource "google_service_account_iam_binding" "builder_allow_wif_impersonation" 
   service_account_id = google_service_account.github_sa_builder.name
   role               = "roles/iam.workloadIdentityUser"
   members = [
-    "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github_pool.name}"
+    "principalSet://iam.googleapis.com/projects/${data.google_project.project.number}/locations/global/workloadIdentityPools/${google_iam_workload_identity_pool.github_pool.workload_identity_pool_id}"
   ]
 
   condition {
