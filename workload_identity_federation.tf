@@ -100,6 +100,6 @@ locals {
   ]
   builder_roles = [
     "roles/artifactregistry.writer",
-    "iam.serviceAccounts.getAccessToken",
+    "roles/iam.serviceAccounts.getAccessToken",
   ]
 }
