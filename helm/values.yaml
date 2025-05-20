@@ -28,7 +28,7 @@ apps:
 
   - name: market-feeling
     image: autoinvestor-market-feeling
-    version: 1.0.7
+    version: 1.0.8
     port: 8080
 
   - name: news-scraper
