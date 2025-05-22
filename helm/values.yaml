@@ -13,7 +13,7 @@ okta:
 apps:
   - name: users
     image: autoinvestor-users
-    version: 2.10.5
+    version: 2.10.6
     port: 8080
 
   - name: alerts
