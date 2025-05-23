@@ -44,15 +44,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Authenticate to Google Cloud
-        if: github.event_name == 'workflow_dispatch' && inputs.elevated_privileges == true
-        uses: google-github-actions/auth@v2
-        with:
-          workload_identity_provider: ${{ vars.WIF_PROVIDER }}
-          service_account: ${{ vars.BUILDER_SA_EP_EMAIL }}
-
-      - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v1
-        if: github.event_name != 'workflow_dispatch' || inputs.elevated_privileges == false
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
 
@@ -81,15 +73,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Authenticate to Google Cloud
-        if: github.event_name == 'workflow_dispatch' && inputs.elevated_privileges == true
-        uses: google-github-actions/auth@v2
-        with:
-          workload_identity_provider: ${{ vars.WIF_PROVIDER }}
-          service_account: ${{ vars.BUILDER_SA_EP_EMAIL }}
-
-      - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v1
-        if: github.event_name != 'workflow_dispatch' || inputs.elevated_privileges == false
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
 
@@ -124,10 +108,11 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Authenticate to Google Cloud
+      - name: Authenticate to Google Cloud (Elevated privileges)
         if: github.event_name == 'workflow_dispatch' && inputs.elevated_privileges == true
         uses: google-github-actions/auth@v2
         with:
+          project_id: ${{ vars.GCP_PROJECT_ID }}
           workload_identity_provider: ${{ vars.WIF_PROVIDER }}
           service_account: ${{ vars.BUILDER_SA_EP_EMAIL }}
 
