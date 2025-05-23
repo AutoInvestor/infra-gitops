@@ -44,9 +44,10 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v1
+        uses: google-github-actions/auth@v2
         with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
+          workload_identity_provider: ${{ vars.WIF_PROVIDER }}
+          service_account: ${{ vars.DEPLOYER_SA_EMAIL }}
 
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v1
@@ -73,9 +74,10 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v1
+        uses: google-github-actions/auth@v2
         with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
+          workload_identity_provider: ${{ vars.WIF_PROVIDER }}
+          service_account: ${{ vars.DEPLOYER_SA_EMAIL }}
 
       - name: Hide backend.tf
         if: needs.check-first-execution.outputs.first_time_execution == 'true'
@@ -112,15 +114,15 @@ jobs:
         if: github.event_name == 'workflow_dispatch' && inputs.elevated_privileges == true
         uses: google-github-actions/auth@v2
         with:
-          project_id: ${{ vars.GCP_PROJECT_ID }}
           workload_identity_provider: ${{ vars.WIF_PROVIDER }}
-          service_account: ${{ vars.BUILDER_SA_EP_EMAIL }}
+          service_account: ${{ vars.DEPLOYER_EP_SA_EMAIL }}
 
       - name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v1
+        uses: google-github-actions/auth@v2
         if: github.event_name != 'workflow_dispatch' || inputs.elevated_privileges == false
         with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
+          workload_identity_provider: ${{ vars.WIF_PROVIDER }}
+          service_account: ${{ vars.DEPLOYER_SA_EMAIL }}
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
