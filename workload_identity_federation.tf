@@ -106,7 +106,7 @@ resource "google_service_account_iam_binding" "deployer_ep_allow_wif_impersonati
 
   condition {
     title      = "Is triggered by terraform manager"
-    expression = "attribute.actor in [\"alvaromanoso\"] && attribute.event_name == \"workflow_dispatch\""
+    expression = "actor in [\"alvaromanoso\"] && event_name == \"workflow_dispatch\""
   }
 }
 
