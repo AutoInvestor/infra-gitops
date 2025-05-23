@@ -7,12 +7,17 @@ on:
       - main
     paths:
       - helm/**
+      - .github/workflows/deploy.yml
   push:
     branches:
       - main
     paths:
       - helm/**
+      - .github/workflows/deploy.yml
   workflow_dispatch:
+
+permissions:
+  id-token: write
 
 jobs:
   deploy:
@@ -24,19 +29,21 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Authenticate to Google Cloud
-        uses: google-github-actions/auth@v1
+      - name: GCP Auth
+        if: steps.version_increment.outputs.bump != 'none'
+        uses: google-github-actions/auth@v2
         with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
+          workload_identity_provider: ${{ vars.WIF_PROVIDER }}
+          service_account: ${{ vars.DEPLOYER_SA_EMAIL }}
 
       - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v1
+        uses: google-github-actions/setup-gcloud@v2
         with:
           project_id: ${{ vars.GCP_PROJECT_ID }}
           install_components: 'kubectl'
 
       - name: Get GKE Credentials
-        uses: google-github-actions/get-gke-credentials@v1
+        uses: google-github-actions/get-gke-credentials@v2
         with:
           cluster_name: ${{ vars.GCP_GKE_CLUSTER_NAME }}
           location: ${{ vars.GCP_GKE_CLUSTER_ZONE }}
@@ -72,20 +79,15 @@ jobs:
             --set okta.clientSecret="${{ steps.secrets.outputs.okta-client-secret }}" \
             --set okta.hookAuthHeaderValue="${{ steps.secrets.outputs.okta-hook-auth-header-value }}"
 
-      - name: Login to Artifact Registry
-        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
-        run: |
-          echo '${{ secrets.GCP_SA_KEY }}' | helm registry login ${{ vars.GCP_REGION }}-docker.pkg.dev \
-            --username=_json_key \
-            --password-stdin
-
-      - name: Push to registry
+      - name: Package & push helm chart
         if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
         run: |
           cd helm
-          current_version=$(sed -n 's/^version: \([0-9]*\.[0-9]*\.[0-9]*\)/\1/p' Chart.yaml)
-          
+          echo -e "\033[32mBuilding helm chart\033[0m"
           helm package .
+          echo -e "\033[32mConfiguring helm registry\033[0m"
+          helm registry login ${{ vars.DOCKER_ARTIFACT_REGISTRY }} -u oauth2accesstoken -p "$(gcloud auth print-access-token)"
+          echo -e "\033[32mPushing helm chart\033[0m"
           helm push "autoinvestor-${current_version}.tgz" "${HELM_REPO}"
 
       - name: Deploy all to GKE

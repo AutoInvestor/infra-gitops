@@ -90,8 +90,7 @@ locals {
   deployer_repo = "AutoInvestor/infra-gitops"
   deployer_roles = [
     "roles/editor",
-    "roles/iam.serviceAccountAdmin",
-    "roles/resourcemanager.projectIamAdmin",
+    "roles/secretmanager.secretAccessor"
   ]
 
   builder_repos = [
