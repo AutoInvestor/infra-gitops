@@ -91,7 +91,7 @@ jobs:
           echo -e "\033[32mConfiguring helm registry\033[0m"
           gcloud auth print-access-token | helm registry login ${{ vars.DOCKER_ARTIFACT_REGISTRY }} -u oauth2accesstoken --password-stdin
           echo -e "\033[32mPushing helm chart\033[0m"
-          current_version=$(sed -n 's/^version: \([0-9]*\.[0-9]*\.[0-9]*\)/\1/p' helm/Chart.yaml)
+          current_version=$(sed -n 's/^version: \([0-9]*\.[0-9]*\.[0-9]*\)/\1/p' Chart.yaml)
           helm push "autoinvestor-${current_version}.tgz" "${HELM_REPO}"
 
       - name: Deploy all to GKE
