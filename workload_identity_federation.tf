@@ -15,8 +15,10 @@ resource "google_iam_workload_identity_pool_provider" "github_provider" {
   disabled                           = false
 
   attribute_mapping = {
-    "google.subject"             = "assertion.sub"
-    "attribute.repository"       = "assertion.repository"
+    "google.subject"       = "assertion.sub"
+    "attribute.repository" = "assertion.repository"
+    "attribute.actor"      = "assertion.actor"
+    "attribute.event_name" = "assertion.event_name"
   }
 
   attribute_condition = "attribute.repository != ''"
@@ -84,6 +86,37 @@ resource "google_project_iam_member" "github_sa_builder_permission" {
   project = data.google_client_config.provider.project
   role    = each.key
   member  = "serviceAccount:${google_service_account.github_sa_builder.email}"
+}
+
+// GitHub SA Deployer Elevated Privileges
+
+resource "google_service_account" "github_sa_deployer_ep" {
+  depends_on = [google_project_service.active_api]
+
+  account_id   = "github-actions-sa-deployer-ep"
+  display_name = "Service Account for GitHub Actions Deployer"
+}
+
+resource "google_service_account_iam_binding" "deployer_ep_allow_wif_impersonation" {
+  service_account_id = google_service_account.github_sa_deployer_ep.id
+  role               = "roles/iam.workloadIdentityUser"
+  members = [
+    "principalSet://iam.googleapis.com/projects/${data.google_project.project.number}/locations/global/workloadIdentityPools/${google_iam_workload_identity_pool.github_actions_pool.workload_identity_pool_id}/attribute.repository/${local.deployer_repo}"
+  ]
+
+  condition {
+    title      = "Is triggered by terraform manager"
+    expression = <<EOT
+      attribute.actor in ["alvaromanoso"] &&
+      attribute.event_name == "workflow_dispatch"
+    EOT
+  }
+}
+
+resource "google_project_iam_member" "github_sa_deployer_ep_permission" {
+  project = data.google_client_config.provider.project
+  role    = "roles/owner"
+  member  = "serviceAccount:${google_service_account.github_sa_deployer_ep.email}"
 }
 
 locals {
