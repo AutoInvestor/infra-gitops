@@ -18,7 +18,6 @@ resource "google_iam_workload_identity_pool_provider" "github_provider" {
     "google.subject"       = "assertion.sub"
     "attribute.repository" = "assertion.repository"
     "attribute.actor"      = "assertion.actor"
-    "attribute.event_name" = "assertion.event_name"
   }
 
   attribute_condition = "attribute.repository != ''"
@@ -101,13 +100,9 @@ resource "google_service_account_iam_binding" "deployer_ep_allow_wif_impersonati
   service_account_id = google_service_account.github_sa_deployer_ep.id
   role               = "roles/iam.workloadIdentityUser"
   members = [
-    "principalSet://iam.googleapis.com/projects/${data.google_project.project.number}/locations/global/workloadIdentityPools/${google_iam_workload_identity_pool.github_actions_pool.workload_identity_pool_id}/attribute.repository/${local.deployer_repo}"
+    for user in local.elevated_privileges_users:
+    "principalSet://iam.googleapis.com/projects/${data.google_project.project.number}/locations/global/workloadIdentityPools/${google_iam_workload_identity_pool.github_actions_pool.workload_identity_pool_id}/attribute.actor/${user}"
   ]
-
-  condition {
-    title      = "Is triggered by terraform manager"
-    expression = "actor in [\"alvaromanoso\"] && event_name == \"workflow_dispatch\""
-  }
 }
 
 resource "google_project_iam_member" "github_sa_deployer_ep_permission" {
@@ -137,5 +132,9 @@ locals {
   ]
   builder_roles = [
     "roles/artifactregistry.writer",
+  ]
+
+  elevated_privileges_users = [
+    "alvaromanoso"
   ]
 }
