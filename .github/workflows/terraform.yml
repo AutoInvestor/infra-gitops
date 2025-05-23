@@ -1,4 +1,7 @@
 name: Terraform
+concurrency:
+  group: ${{ github.workflow_ref }}
+  cancel-in-progress: false
 
 on:
   push:
