@@ -1,4 +1,7 @@
 name: Deploy
+concurrency:
+  group: ${{ github.workflow_ref }}
+  cancel-in-progress: false
 
 on:
   pull_request:
@@ -86,8 +89,9 @@ jobs:
           echo -e "\033[32mBuilding helm chart\033[0m"
           helm package .
           echo -e "\033[32mConfiguring helm registry\033[0m"
-          helm registry login ${{ vars.DOCKER_ARTIFACT_REGISTRY }} -u oauth2accesstoken -p "$(gcloud auth print-access-token)"
+          gcloud auth print-access-token | helm registry login ${{ vars.DOCKER_ARTIFACT_REGISTRY }} -u oauth2accesstoken --password-stdin
           echo -e "\033[32mPushing helm chart\033[0m"
+          current_version=$(sed -n 's/^version: \([0-9]*\.[0-9]*\.[0-9]*\)/\1/p' helm/Chart.yaml)
           helm push "autoinvestor-${current_version}.tgz" "${HELM_REPO}"
 
       - name: Deploy all to GKE
