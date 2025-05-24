@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: decision-making-environment
+data:
+  SPRING_PROFILES_ACTIVE: "prod"
+  PUBSUB_SUBSCRIPTION_MARKET_FEELING: "decision-making-to-market-feeling"
