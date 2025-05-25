@@ -6,3 +6,4 @@ data:
   SPRING_PROFILES_ACTIVE: "prod"
   PUBSUB_SUBSCRIPTION_DECISION_MAKING: "alerts-to-decision-making"
   PUBSUB_SUBSCRIPTION_PORTFOLIO: "alerts-to-portfolio"
+  PUBSUB_SUBSCRIPTION_USERS: "alerts-to-users"
