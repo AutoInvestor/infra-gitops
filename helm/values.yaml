@@ -36,7 +36,7 @@ apps:
 
   - name: decision-making
     image: autoinvestor-decision-making
-    version: 0.3.17
+    version: 0.3.18
     port: 8080
 
   - name: core
