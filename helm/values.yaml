@@ -18,7 +18,7 @@ apps:
 
   - name: alerts
     image: autoinvestor-alerts
-    version: 0.3.10
+    version: 0.3.11
     port: 8080
 
   - name: portfolio
