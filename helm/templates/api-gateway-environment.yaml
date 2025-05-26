@@ -5,4 +5,3 @@ metadata:
 data:
   OKTA_DOMAIN: "{{ .Values.okta.domain }}"
   OKTA_CLIENT_ID: "{{ .Values.okta.clientId }}"
-  OKTA_HOOK_AUTH_HEADER_NAME: "{{ .Values.okta.hookAuthHeaderName }}"
