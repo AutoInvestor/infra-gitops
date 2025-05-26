@@ -17,13 +17,3 @@ resource "google_secret_manager_secret" "okta_client_secret" {
     auto {}
   }
 }
-
-resource "google_secret_manager_secret" "okta_hook_auth_header_value" {
-  depends_on = [google_project_service.active_api]
-
-  secret_id = "okta-hook-auth-header-value"
-
-  replication {
-    auto {}
-  }
-}

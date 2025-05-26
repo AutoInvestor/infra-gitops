@@ -7,8 +7,6 @@ okta:
   domain: "dev-20214328.okta.com"
   clientId: "0oaop5ffwazcO5OoV5d7"
   clientSecret: ""
-  hookAuthHeaderName: "X-Hook-Authentication"
-  hookAuthHeaderValue: ""
 
 apps:
   - name: users
