@@ -21,7 +21,7 @@ apps:
 
   - name: portfolio
     image: autoinvestor-portfolio
-    version: 2.3.0
+    version: 2.4.0
     port: 8080
 
   - name: market-feeling
