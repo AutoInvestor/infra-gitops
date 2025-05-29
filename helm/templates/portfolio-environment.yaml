@@ -3,4 +3,5 @@ kind: ConfigMap
 metadata:
   name: portfolio-environment
 data:
+  SPRING_PROFILES_ACTIVE: "prod"
   PUBSUB_SUBSCRIPTION_USERS: "portfolio-to-users"
