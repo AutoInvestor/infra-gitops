@@ -46,7 +46,7 @@ apps:
 
   - name: frontend
     image: autoinvestor-frontend
-    version: 0.13.12
+    version: 0.13.13
     port: 80
     path: /
 
